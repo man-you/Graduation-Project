@@ -21,7 +21,7 @@
 
         <div class="info__desc">请返回学习首页，继续你的学习进程。</div>
 
-        <router-link to="/" class="info__back"> 返回学习首页 </router-link>
+        <button class="info__back" @click="handleGoBack">返回上一级</button>
       </div>
     </div>
   </div>
@@ -29,10 +29,16 @@
 
 <script setup>
 import { computed } from 'vue'
+import { routerBack } from '@/util/routerUtil'
 
 const message = computed(() => {
   return '你访问的学习页面不存在'
 })
+
+// 调用返回上一级方法
+const handleGoBack = () => {
+  routerBack() // 不传参默认兜底跳首页
+}
 </script>
 
 <style lang="scss" scoped>

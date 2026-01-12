@@ -24,6 +24,9 @@
 </template>
 
 <script setup>
+/* * 
+  根布局文件，包含导航栏、主内容区域、页脚，和认证模态框组件。
+  */
 import Footer from '@/layouts/Footer.vue'
 import Navigation from '@/layouts/Navigation.vue'
 import FeatureCards from '@/components/FeatureCards.vue'

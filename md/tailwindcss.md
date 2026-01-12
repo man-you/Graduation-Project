@@ -7,7 +7,7 @@
 ### 配置tailwindcss.config.js文件
 
 ```
-  // 扫描入口 html 以及 src 目录下所有 Vue / JS / TS 文件中的 class
+  扫描入口 html 以及 src 目录下所有 Vue / JS / TS 文件中的 class
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx,vue}'],
 
 ```
