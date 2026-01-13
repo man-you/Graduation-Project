@@ -36,7 +36,7 @@ npm run preview
 
 ## 三、工程目录结构规范
 
-````
+```
 public/ # 公共静态资源（不会被 Vite 处理）
 src/
 ├── api/ # 接口请求层（只做请求，不写业务逻辑）
@@ -92,7 +92,7 @@ README.md # 项目说明文档
 - icons：全局图标注册与管理
 - router：路由配置（常量路由/异步路由）
 
----
+```
 
 ## 四、应用入口说明
 
@@ -102,4 +102,4 @@ README.md # 项目说明文档
 <div id="app"></div>
 <script type="module" src="/src/main.ts"></script>
 说明： Vite 项目中，index.html 即应用入口。
-````
+```
