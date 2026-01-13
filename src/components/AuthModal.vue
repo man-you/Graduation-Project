@@ -1,6 +1,7 @@
 <template>
   <Transition name="fade-slide-up">
     <div v-if="isAuthOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
+      <!-- 除了模态框外，其他内容都用这个背景遮罩，也就是说点击后都会进行关闭 -->
       <div
         class="absolute inset-0 bg-slate-900/10 dark:bg-black/50 backdrop-blur-sm"
         @click="closeAuthModal"
@@ -45,7 +46,7 @@
           </div>
           <button
             class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all mt-4"
-            @click=""
+            @click="handleAuthSubmit"
           >
             {{ authMode === 'login' ? '立即登录' : '立即注册' }}
           </button>

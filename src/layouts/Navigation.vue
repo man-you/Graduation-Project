@@ -42,7 +42,7 @@
           @click="toggleDark"
           class="px-3 py-1 rounded-full border border-slate-300 dark:border-slate-600 text-sm dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
         >
-          <!-- 动态图标 -->
+          <!-- 动态组件标签，用于渲染不同类型的组件 -->
           <component :is="isDark ? PhSun : PhMoon" class="w-5 h-5" />
           {{ isDark ? '亮色模式' : '暗色模式' }}
         </button>
@@ -67,6 +67,8 @@
 <script setup>
 import { ref, watchEffect } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { setLocalStorage, getLocalStorage } from '@/util/storageUtil'
+import { PhSun, PhMoon } from '@phosphor-icons/vue'
 
 const authStore = useAuthStore()
 // 打开登录模态框
@@ -80,11 +82,12 @@ const handleRegister = () => {
 }
 
 // 暗黑模式
-const isDark = ref(localStorage.getItem('isDark') === 'true')
+const isDark = ref(getLocalStorage('isDark') === 'true')
+
 watchEffect(() => {
   if (isDark.value) document.documentElement.classList.add('dark')
   else document.documentElement.classList.remove('dark')
-  localStorage.setItem('isDark', isDark.value)
+  setLocalStorage('isDark', isDark.value)
 })
 const toggleDark = () => {
   isDark.value = !isDark.value

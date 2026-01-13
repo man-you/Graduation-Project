@@ -36,19 +36,14 @@ npm run preview
 
 ## 三、工程目录结构规范
 
-```
+````
 public/ # 公共静态资源（不会被 Vite 处理）
 src/
-├── api/ # 接口请求层（只做请求，不写业务逻辑）【当前代码库暂未实现】
-│   ├── http.ts
-│   └── user.api.ts
+├── api/ # 接口请求层（只做请求，不写业务逻辑）
+│   └── mock/
+│       └── menu.ts # 菜单数据模拟
 ├── assets/ # 静态资源
-│   ├── 401_images/
-│   │   └── 401.gif
-│   ├── 404_images/
-│   │   ├── 404.png
-│   │   └── 404_cloud.png
-│   └── tailwind.css # 样式文件（替代规范中 styles/index.scss）
+│   └── tailwind.css # 样式文件
 ├── components/ # 全局通用组件
 │   ├── AuthModal.vue # 认证弹窗组件
 │   ├── FeatureCards.vue # 功能卡片组件
@@ -58,7 +53,9 @@ src/
 │   └── index.ts # 全局图标注册（Phosphor Icons）
 ├── layouts/ # 布局组件（页面骨架）
 │   ├── Footer.vue # 页脚布局
-│   └── Navigation.vue # 导航栏布局
+│   ├── Navigation.vue # 导航栏布局
+│   ├── PageHeader.vue # 页面头部布局（新增）
+│   └── SideBar.vue # 侧边栏布局
 ├── router/ # 路由配置
 │   └── index.ts # 路由核心配置（常量/异步路由、重置方法）
 ├── stores/ # Pinia 状态管理
@@ -69,6 +66,8 @@ src/
 │   └── storageUtil.ts # 本地存储工具（local/sessionStorage）
 ├── views/ # 页面级组件
 │   ├── index.vue # 首页
+│   ├── study/
+│   │   └── index.vue # 学习页面（带侧边栏布局）
 │   └── error-page/ # 错误页目录
 │       ├── 401.vue # 401无权限页
 │       └── 404.vue # 404不存在页
@@ -76,11 +75,9 @@ src/
 ├── main.ts # 应用入口（注册Pinia/路由/全局组件）
 └── shims-vue.d.ts # Vue组件类型声明（TS类型补充）
 index.html # 应用入口 HTML（Vite 入口）
-vite.config.ts # Vite 配置文件【当前代码库未展示】
+vite.config.ts # Vite 配置文件
 package.json # 项目依赖配置
 README.md # 项目说明文档
-```
-
 ### 目录设计原则
 
 ### 项目目录设计说明（简要版）
@@ -105,4 +102,4 @@ README.md # 项目说明文档
 <div id="app"></div>
 <script type="module" src="/src/main.ts"></script>
 说明： Vite 项目中，index.html 即应用入口。
-```
+````

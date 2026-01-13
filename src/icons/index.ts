@@ -1,3 +1,4 @@
+// src/icons/index.ts
 import {
   PhSun,
   PhMoon,
@@ -10,7 +11,17 @@ import {
   PhGraduationCap,
   PhLightbulb,
   PhX,
+  PhChartLine,
+  PhStudent,
+  PhTreeStructure,
+  PhCalendarBlank,
+  PhNotePencil,
+  PhList,
+  PhBooks,
+  PhChalkboardTeacher,
+  PhUserCircle,
 } from '@phosphor-icons/vue'
+
 // 全局导入，全局导出
 export const icons = {
   PhSun,
@@ -24,4 +35,13 @@ export const icons = {
   PhGraduationCap,
   PhLightbulb,
   PhX,
+  PhChartLine,
+  PhStudent,
+  PhTreeStructure,
+  PhCalendarBlank,
+  PhNotePencil,
+  PhList,
+  PhBooks,
+  PhChalkboardTeacher,
+  PhUserCircle,
 }

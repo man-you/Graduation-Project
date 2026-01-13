@@ -21,14 +21,23 @@
     <div class="mt-10 flex justify-center gap-4">
       <button
         class="bg-slate-900 dark:bg-slate-100 dark:text-slate-900 text-white px-8 py-4 rounded-xl font-semibold shadow-slate-300 hover:bg-slate-700 dark:hover:bg-slate-200 transition-all flex items-center gap-2"
+        @click="handleLogin"
       >
-        开启个性化学习 <i class="ph-bold ph-arrow-right"></i>
+        开启个性化学习
       </button>
       <button
         class="bg-white dark:bg-slate-700 dark:text-slate-100 border border-slate-200 dark:border-slate-600 px-8 py-4 rounded-xl font-semibold shadow-md hover:bg-slate-50 dark:hover:bg-slate-600 transition-all flex items-center gap-2"
       >
-        查看平台演示 <i class="ph-fill ph-play-circle"></i>
+        查看平台演示
       </button>
     </div>
   </div>
 </template>
+<script setup>
+import { useAuthStore } from '@/stores/auth'
+const authStore = useAuthStore()
+// 进入登录模态框
+const handleLogin = () => {
+  authStore.openAuth('login')
+}
+</script>

@@ -19,11 +19,17 @@ import { createRouter, createWebHistory } from 'vue-router'
  * 1. 常量路由 constantRoutes 【无权限，所有人可见，包括未登录游客】
  *  项目公共路由，启动即加载，永久存在
  */
+const DEV_ENTRY = import.meta.env.DEV ? '/study' : '/'
+
 const constantRoutes = [
   {
     path: '/',
-    name: 'Home',
-    component: () => import('@/views/index.vue'),
+    redirect: DEV_ENTRY,
+  },
+  {
+    path: '/study',
+    name: 'StudyIndex',
+    component: () => import('@/views/study/index.vue'),
   },
   {
     path: '/401',

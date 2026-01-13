@@ -9,7 +9,7 @@ interface useState {
 // 导出认证状态管理的 Pinia store
 export const useAuthStore = defineStore('auth', {
   // typeScript写法，在vue3的Pinia中的写法是用函数写法
-  // ():AuthState  定义返回值类型
+  // ():useState  定义返回值类型
   state: (): useState => {
     return {
       isAuthOpen: false,
