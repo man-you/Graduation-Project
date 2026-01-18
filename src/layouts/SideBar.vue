@@ -52,7 +52,16 @@
 // 导入侧边栏数据
 import { menuList } from '@/api/mock/menu'
 
+// vue3中的宏写法
 defineProps<{
   open: boolean
 }>()
+/**
+ * 等价于下面的代码
+export default {
+  props:{
+    open:Boolean
+  }
+}
+ */
 </script>

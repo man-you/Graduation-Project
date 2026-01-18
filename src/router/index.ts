@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { Router } from 'vue-router'
 
 // @符号是一种路径别名，表示src目录
 // 这个通常是是在vite.config.ts中配置的
@@ -19,17 +20,12 @@ import { createRouter, createWebHistory } from 'vue-router'
  * 1. 常量路由 constantRoutes 【无权限，所有人可见，包括未登录游客】
  *  项目公共路由，启动即加载，永久存在
  */
-const DEV_ENTRY = import.meta.env.DEV ? '/study' : '/'
 
 const constantRoutes = [
   {
     path: '/',
-    redirect: DEV_ENTRY,
-  },
-  {
-    path: '/study',
-    name: 'StudyIndex',
-    component: () => import('@/views/study/index.vue'),
+    name: 'home',
+    component: () => import('@/views/index.vue'),
   },
   {
     path: '/401',
@@ -41,42 +37,44 @@ const constantRoutes = [
     name: 'Page404',
     component: () => import('@/views/error-page/404.vue'),
   },
+  // ⚠️ 注意：
+  // 这个兜底路由不能直接放在 constantRoutes 里，
+  // 否则会在动态路由 addRoute 之前注册，导致 student / teacher 等动态路由无法匹配
+  // { path: '/:pathMatch(.*)*', redirect: '/404', hidden: true },
 ]
 
-/**
- * 2. 异步路由 asyncRoutes 【有权限控制，登录后动态加载】
- *  学习平台核心业务路由，全部是一级路由！
- *  学生/教师/管理员的专属页面，未登录无法访问
- *  重中之重：404路由必须放在最后一位！
- */
-export const asyncRoutes = [
-  //  学生端：学习中心 - 一级路由 /study
-  //  studyRouter,
+// 统一封装：创建 router 的工厂函数
+// 作用：
+// 1. 保证 router 初始化顺序稳定
+// 2. 保证 resetRouter 后 404 兜底依然存在
+function createAppRouter(): Router {
+  const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: constantRoutes,
+    // 滚动行为：每次路由切换时，滚动到顶部
+    scrollBehavior: () => ({ top: 0 }),
+  })
 
-  //  教师端：教学管理 - 一级路由 /teacher
-  //  teacherRouter,
+  // 吞噬型兜底路由：必须在 router 创建完成后、所有业务路由之前统一注册
+  router.addRoute({
+    path: '/:pathMatch(.*)*',
+    redirect: '/404',
+  })
 
-  //  管理员端：系统管理 - 一级路由 /admin
-  //  adminRouter,
+  return router
+}
 
-  //  兜底路由，匹配所有未定义路径，放最后！
-  { path: '/:pathMatch(.*)*', redirect: '/404', hidden: true },
-]
-
-const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
-  routes: [...constantRoutes, ...asyncRoutes],
-  // 滚动行为：每次路由切换时，滚动到顶部
-  scrollBehavior: () => ({ top: 0 }),
-})
+const router = createAppRouter()
 
 //  重置路由 resetRouter()
+//  使用场景：
+//  - 用户退出登录
+//  - 切换角色
+//  - 清空动态路由
 export function resetRouter() {
-  const newRouter = createRouter({
-    history: createWebHistory(import.meta.env.BASE_URL),
-    routes: [...constantRoutes, ...asyncRoutes],
-  })
-  //  将新路由赋值给旧路由
+  const newRouter = createAppRouter()
+  //  将新路由实例的内部状态复制到旧 router 上
+  //  保证已有 app.use(router) 不失效
   Object.assign(router, newRouter)
 }
 

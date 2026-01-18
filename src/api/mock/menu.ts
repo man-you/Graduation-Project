@@ -4,6 +4,7 @@ import {
   PhCalendarBlank,
   PhNotePencil,
   PhBooks,
+  PhGear,
 } from '@phosphor-icons/vue'
 
 export interface MenuItem {
@@ -13,6 +14,7 @@ export interface MenuItem {
   weight: 'fill' | 'regular'
   isActive: boolean
   path?: string
+  roles?: string[]
 }
 
 // 菜单列表源数据
@@ -37,6 +39,7 @@ export const menuList: MenuItem[] = [
     icon: PhTreeStructure,
     weight: 'regular',
     isActive: true,
+    roles: ['teacher', 'student'],
   },
   {
     id: 4,
@@ -52,4 +55,5 @@ export const menuList: MenuItem[] = [
     weight: 'regular',
     isActive: true,
   },
+  { id: 6, title: '设置', icon: PhGear, weight: 'regular', isActive: true },
 ]

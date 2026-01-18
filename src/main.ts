@@ -3,18 +3,42 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
-import { icons } from './icons/index'
+import '@/guard'
+import { icons } from './icons'
+import { getToken } from '@/util/authUtil'
+import { useAuthStore } from '@/stores/auth'
+import { getAccessibleRoutes, addDynamicRoutes } from '@/util/guardUtil'
 
-const app = createApp(App)
+async function bootstrap() {
+  const app = createApp(App)
+  const pinia = createPinia()
 
-// 全局注册图标组件
-// as类型断言操作符，typeof 类型查询操作符， keyof 索引类型查询操作符
-Object.keys(icons).forEach((key) => {
-  // 获取icons对象中所有属性名组合的联合类型
-  app.component(key, icons[key as keyof typeof icons])
-})
+  app.use(pinia)
 
-app.use(createPinia())
-app.use(router)
+  // 注册图标
+  Object.keys(icons).forEach((key) => {
+    app.component(key, icons[key as keyof typeof icons])
+  })
 
-app.mount('#app')
+  const authStore = useAuthStore()
+  const token = getToken()
+
+  // 在 mount 之前准备好动态路由
+  if (token) {
+    try {
+      await authStore.getUserInfo()
+
+      const routes = getAccessibleRoutes(authStore.userRole)
+      addDynamicRoutes(routes)
+
+      authStore.isRouteAdded = true
+    } catch (e) {
+      authStore.logout()
+    }
+  }
+
+  app.use(router)
+  app.mount('#app')
+}
+
+bootstrap()

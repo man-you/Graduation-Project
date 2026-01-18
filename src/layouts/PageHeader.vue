@@ -12,6 +12,16 @@
 </template>
 
 <script setup>
-// 定义事件
+// 定义事件提交的宏写法
 defineEmits(['toggle-sidebar'])
+/* 
+ * 等价写法
+ export default{
+  methods: {
+    toggleSidebar() {
+      this.$emit('toggle-sidebar')
+    }
+  }
+ }
+ */
 </script>

@@ -1,25 +1,80 @@
+import { setToken, removeToken } from '@/util/authUtil'
 import { defineStore } from 'pinia'
+import { loginApi, getUserInfoApi } from '@/api/mock/user'
 
-// 定义认证状态的接口
-interface useState {
+interface UserState {
+  token: string | null
+  userInfo: any
+  userRole: string | null
+
+  // 权限系统关键状态
+  isUserInfoLoaded: boolean
+  isRouteAdded: boolean
+
+  // 模态状态
   isAuthOpen: boolean
   authMode: 'login' | 'register'
 }
 
-// 导出认证状态管理的 Pinia store
 export const useAuthStore = defineStore('auth', {
-  // typeScript写法，在vue3的Pinia中的写法是用函数写法
-  // ():useState  定义返回值类型
-  state: (): useState => {
-    return {
-      isAuthOpen: false,
-      authMode: 'login',
-    }
-  },
+  state: (): UserState => ({
+    token: null,
+    userInfo: null,
+    userRole: null,
 
-  // 定义修改状态的方法
+    isUserInfoLoaded: false,
+    isRouteAdded: false,
+
+    isAuthOpen: false,
+    authMode: 'login',
+  }),
+
   actions: {
-    // 打开认证模态框并设置模式
+    // 登录
+    async login(credentials: { email: string; password: string }) {
+      const res = await loginApi(credentials)
+
+      const { token, userInfo } = res.data
+
+      this.token = token
+      setToken(token)
+
+      this.userInfo = userInfo
+      this.userRole = userInfo.role
+      this.isUserInfoLoaded = true
+
+      // 登录成功后，动态路由应重新评估
+      this.isRouteAdded = false
+
+      this.isAuthOpen = false
+      return res
+    },
+
+    // 拉取用户信息（供路由守卫调用）
+    async getUserInfo() {
+      const res = await getUserInfoApi()
+
+      this.userInfo = res.data
+      this.userRole = res.data.userInfo.role
+      this.isUserInfoLoaded = true
+
+      return res
+    },
+
+    // 登出
+    logout() {
+      this.token = null
+      this.userInfo = null
+      this.userRole = null
+
+      this.isUserInfoLoaded = false
+      this.isRouteAdded = false
+
+      this.isAuthOpen = false
+      removeToken()
+    },
+
+    // UI 行为
     openAuth(mode: 'login' | 'register') {
       this.isAuthOpen = true
       this.authMode = mode
