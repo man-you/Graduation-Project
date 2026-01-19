@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex bg-slate-50 dark:bg-slate-900 overflow-hidden">
     <!-- 侧边栏组件 -->
-    <Sidebar :open="sidebarOpen" />
+    <Sidebar v-if="authStore.userInfo" :open="sidebarOpen" />
 
     <!-- 主内容区域Main -->
     <main
@@ -27,6 +27,9 @@
 import { ref } from 'vue'
 import Sidebar from '@/layouts/SideBar.vue'
 import PageHeader from '@/layouts/PageHeader.vue'
+import { useAuthStore } from '@/stores/auth'
+
+const authStore = useAuthStore()
 
 const sidebarOpen = ref(true)
 

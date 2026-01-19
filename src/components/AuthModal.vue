@@ -1,21 +1,25 @@
 <template>
   <Transition name="fade-slide-up">
     <div v-if="isAuthOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-6">
-      <!-- 除了模态框外，其他内容都用这个背景遮罩，也就是说点击后都会进行关闭 -->
+      <!-- 背景遮罩 -->
       <div
         class="absolute inset-0 bg-slate-900/10 dark:bg-black/50 backdrop-blur-sm"
         @click="closeAuthModal"
       ></div>
+
+      <!-- 模态框 -->
       <div
         class="relative w-full max-w-[480px] bg-white dark:bg-slate-800 rounded-3xl p-12 shadow-2xl dark:shadow-slate-700 border border-slate-100 dark:border-slate-700"
       >
+        <!-- 关闭按钮 -->
         <button
           @click="closeAuthModal"
-          class="absolute top-6 right-6 text-slate-400 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors"
+          class="absolute top-6 right-6 text-slate-400 hover:text-slate-900 transition-colors"
         >
           <PhX size="24" class="text-indigo-600 dark:text-indigo-400" />
         </button>
 
+        <!-- 标题 -->
         <div class="mb-8">
           <h3 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">
             {{ authMode === 'login' ? '欢迎回来' : '免费注册' }}
@@ -25,70 +29,171 @@
           </p>
         </div>
 
-        <form @submit.prevent class="space-y-6">
+        <!-- 表单 -->
+        <form @submit.prevent="handleAuthSubmit" class="space-y-6">
+          <!-- 邮箱 -->
           <div class="space-y-2">
-            <label class="text-xs font-bold text-slate-500 dark:text-slate-300 ml-1"
-              >电子邮箱</label
-            >
+            <label class="text-xs font-bold text-slate-500 ml-1"> 电子邮箱 </label>
             <input
+              v-model="email"
               type="email"
               placeholder="请输入您的邮箱"
-              class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-400 transition-all"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
+
+          <!-- 密码 -->
           <div class="space-y-2">
-            <label class="text-xs font-bold text-slate-500 dark:text-slate-300 ml-1">密码</label>
+            <label class="text-xs font-bold text-slate-500 ml-1"> 密码 </label>
             <input
+              v-model="password"
               type="password"
               placeholder="请输入您的密码"
-              class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-400 transition-all"
+              class="w-full bg-slate-50 border border-slate-200 rounded-xl px-5 py-3.5 focus:outline-none focus:ring-2 focus:ring-blue-200"
             />
           </div>
+
+          <!-- 角色选择（仅注册时显示） -->
+          <div v-if="authMode === 'register'" class="space-y-2">
+            <label class="text-xs font-bold text-slate-500 ml-1"> 注册身份 </label>
+
+            <div class="flex gap-4">
+              <button
+                type="button"
+                class="flex-1 py-3 rounded-xl border font-semibold transition-all"
+                :class="
+                  role === 'student'
+                    ? 'border-blue-600 bg-blue-50 text-blue-600'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                "
+                @click="role = 'student'"
+              >
+                学生
+              </button>
+
+              <button
+                type="button"
+                class="flex-1 py-3 rounded-xl border font-semibold transition-all"
+                :class="
+                  role === 'teacher'
+                    ? 'border-blue-600 bg-blue-50 text-blue-600'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                "
+                @click="role = 'teacher'"
+              >
+                教师
+              </button>
+            </div>
+          </div>
+
+          <!-- 错误提示 -->
+          <p v-if="errorMessage" class="text-sm text-red-500 text-center">
+            {{ errorMessage }}
+          </p>
+
+          <!-- 提交按钮 -->
           <button
-            class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 transition-all mt-4"
-            @click="handleAuthSubmit"
+            type="submit"
+            :disabled="loading"
+            class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg shadow-blue-200 hover:bg-blue-700 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed transition-all"
           >
-            {{ authMode === 'login' ? '立即登录' : '立即注册' }}
+            {{
+              loading
+                ? authMode === 'login'
+                  ? '登录中...'
+                  : '注册中...'
+                : authMode === 'login'
+                  ? '立即登录'
+                  : '立即注册'
+            }}
           </button>
         </form>
 
-        <div class="mt-8 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-3">
+        <!-- 切换登录 / 注册 -->
+        <div class="mt-8 border-t border-slate-100 flex flex-col gap-3 pt-4">
           <button
-            class="w-full flex items-center justify-center gap-3 py-3 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
-            @click="logOrRes"
+            class="w-full py-3 border border-slate-200 rounded-xl text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+            @click="toggleMode"
           >
-            <span>{{ authMode === 'login' ? '去注册' : '去登录' }}</span>
+            {{ authMode === 'login' ? '去注册' : '去登录' }}
           </button>
         </div>
       </div>
     </div>
   </Transition>
 </template>
-<script setup>
+
+<script setup lang="ts">
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { storeToRefs } from 'pinia' // 核心：引入解构响应式的api
+import { storeToRefs } from 'pinia'
+import { PhX } from '@phosphor-icons/vue'
+
 const authStore = useAuthStore()
 const { isAuthOpen, authMode } = storeToRefs(authStore)
 
+const email = ref('')
+const password = ref('')
+const role = ref<'student' | 'teacher'>('student')
+
+const loading = ref(false)
+const errorMessage = ref('')
+
 // 关闭模态框
 const closeAuthModal = () => {
-  authStore.isAuthOpen = false
+  authStore.closeAuth()
 }
-// 切换登录和注册
-const logOrRes = () => {
+
+// 切换登录 / 注册
+const toggleMode = () => {
+  errorMessage.value = ''
+  role.value = 'student'
   authStore.toggleMode()
 }
-// 处理登录和注册的表单提交
-const handleAuthSubmit = () => {
-  if (authMode.value === 'login') {
-    // 处理登录逻辑
-  } else {
-    // 处理注册逻辑
+
+// 提交表单
+const handleAuthSubmit = async () => {
+  errorMessage.value = ''
+
+  if (!email.value || !password.value) {
+    errorMessage.value = '请输入邮箱和密码'
+    return
+  }
+
+  try {
+    loading.value = true
+
+    if (authMode.value === 'login') {
+      await authStore.login({
+        email: email.value,
+        password: password.value,
+      })
+    } else {
+      await authStore.register({
+        email: email.value,
+        password: password.value,
+        role: role.value,
+      })
+    }
+
+    email.value = ''
+    password.value = ''
+    role.value = 'student'
+  } catch (error: any) {
+    const status = error?.response?.status
+    console.log('status', status)
+    if (status === 409) {
+      errorMessage.value = '该邮箱已被注册'
+    } else {
+      errorMessage.value = '操作失败，请稍后重试'
+    }
+  } finally {
+    loading.value = false
   }
 }
 </script>
+
 <style scoped>
-/* 模态框过渡动画 */
 .fade-slide-up-enter-active,
 .fade-slide-up-leave-active {
   transition: all 0.3s ease;

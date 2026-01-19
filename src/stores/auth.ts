@@ -1,6 +1,8 @@
 import { setToken, removeToken } from '@/util/authUtil'
 import { defineStore } from 'pinia'
-import { loginApi, getUserInfoApi } from '@/api/mock/user'
+import { loginApi, registerApi, getUserInfoApi } from '@/api/mock/user'
+import router from '@/router'
+import { ROLE_HOME_MAP } from '@/router/config/roleHomeMap'
 
 interface UserState {
   token: string | null
@@ -34,28 +36,65 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: { email: string; password: string }) {
       const res = await loginApi(credentials)
 
-      const { token, userInfo } = res.data
+      const { accessToken, user } = res
 
-      this.token = token
-      setToken(token)
+      this.token = accessToken
+      setToken(accessToken)
 
-      this.userInfo = userInfo
-      this.userRole = userInfo.role
+      this.userInfo = user
+      this.userRole = user.role
       this.isUserInfoLoaded = true
 
       // 登录成功后，动态路由应重新评估
       this.isRouteAdded = false
 
       this.isAuthOpen = false
+
+      // 跳转
+      const role = this.userRole
+      const targetPath = role && ROLE_HOME_MAP[role] ? ROLE_HOME_MAP[role] : '/'
+
+      router.replace(targetPath)
+
       return res
     },
 
+    // 注册（注册即登录）
+    async register(credentials: { email: string; password: string; role: string }) {
+      const res = await registerApi(credentials)
+
+      console.log(res)
+
+      const { accessToken, user } = res
+
+      // 1. token
+      this.token = accessToken
+      setToken(accessToken)
+
+      // 2. 用户信息
+      this.userInfo = user
+      this.userRole = user.role
+      this.isUserInfoLoaded = true
+
+      // 3. 动态路由重置
+      this.isRouteAdded = false
+
+      // 4. 关闭模态
+      this.isAuthOpen = false
+
+      // 5. 跳转
+      const role = this.userRole
+      const targetPath = role && ROLE_HOME_MAP[role] ? ROLE_HOME_MAP[role] : '/'
+      router.replace(targetPath)
+
+      return res
+    },
     // 拉取用户信息（供路由守卫调用）
     async getUserInfo() {
       const res = await getUserInfoApi()
 
-      this.userInfo = res.data
-      this.userRole = res.data.userInfo.role
+      this.userInfo = res.user
+      this.userRole = res.user.role
       this.isUserInfoLoaded = true
 
       return res
@@ -72,6 +111,9 @@ export const useAuthStore = defineStore('auth', {
 
       this.isAuthOpen = false
       removeToken()
+
+      // 跳转到公共首页
+      router.replace('/')
     },
 
     // UI 行为

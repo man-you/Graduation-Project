@@ -3,7 +3,7 @@
     class="fixed top-0 left-0 z-40 h-screen w-64 bg-gradient-to-b from-slate-800 to-slate-900 text-slate-200 flex flex-col transition-transform duration-300 ease-out shadow-xl"
     :class="open ? 'translate-x-0' : '-translate-x-full'"
   >
-    <!-- Logo -->
+    <!-- Logo & 用户操作 -->
     <div
       class="h-16 flex items-center px-6 gap-3 border-b border-slate-700 transition-opacity duration-200"
       :class="open ? 'opacity-100' : 'opacity-0 pointer-events-none'"
@@ -11,24 +11,65 @@
       <div
         class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold shadow-md"
       >
-        <PhGraph class="text-white" :size="20" />
+        <PhGraph :size="20" />
       </div>
+
       <span class="text-lg font-semibold text-white tracking-wide">知链</span>
-      <div class="ml-auto">
-        <PhUserCircle :size="30" class="text-slate-300 hover:text-white transition-colors" />
+
+      <!-- 用户菜单 -->
+      <div class="ml-auto relative" v-if="user" ref="dropdownRef">
+        <PhUserCircle
+          :size="30"
+          class="text-slate-300 hover:text-white transition-colors cursor-pointer"
+          @click.stop="toggleDropdown"
+        />
+
+        <div
+          v-if="showDropdown"
+          class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200"
+        >
+          <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+            <div class="font-medium text-gray-900">
+              {{ user.userName }}
+            </div>
+            <div class="text-xs text-gray-500 truncate">
+              {{ user.email }}
+            </div>
+          </div>
+
+          <button
+            @click="handleLogout"
+            class="w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-200 transition-colors flex items-center"
+          >
+            <PhSignOut class="mr-2" :size="16" />
+            退出登录
+          </button>
+        </div>
       </div>
     </div>
 
     <!-- 用户信息 -->
     <div
+      v-if="user"
       class="flex flex-col items-center py-6 border-b border-slate-700 transition-opacity duration-200 delay-75"
       :class="open ? 'opacity-100' : 'opacity-0 pointer-events-none'"
     >
       <div
-        class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 mb-3 shadow-md"
-      />
-      <div class="text-base font-medium text-white mt-2">用户名</div>
-      <div class="text-sm text-slate-400">student@edu.com</div>
+        class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 mb-3 shadow-md overflow-hidden"
+      >
+        <img
+          :src="user.avatarUrl || defaultAvatar"
+          :alt="user.userName"
+          class="w-full h-full object-cover"
+        />
+      </div>
+
+      <div class="text-base font-medium text-white mt-2">
+        {{ user.userName }}
+      </div>
+      <div class="text-sm text-slate-400">
+        {{ user.email }}
+      </div>
     </div>
 
     <!-- 菜单 -->
@@ -37,31 +78,69 @@
       :class="open ? 'opacity-100' : 'opacity-0 pointer-events-none'"
     >
       <div
-        v-for="menu of menuList"
+        v-for="menu in menuList"
         :key="menu.id"
         class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700/50 transition-colors cursor-pointer"
       >
         <component :is="menu.icon" :size="22" :weight="menu.weight" class="mr-3 text-slate-300" />
-        <span class="text-slate-200 font-medium">{{ menu.title }}</span>
+        <span class="text-slate-200 font-medium">
+          {{ menu.title }}
+        </span>
       </div>
     </nav>
   </aside>
 </template>
 
 <script setup lang="ts">
-// 导入侧边栏数据
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { menuList } from '@/api/mock/menu'
+import { useAuthStore } from '@/stores/auth'
+import defaultAvatar from '@/assets/R.png'
 
-// vue3中的宏写法
 defineProps<{
   open: boolean
 }>()
-/**
- * 等价于下面的代码
-export default {
-  props:{
-    open:Boolean
+
+const authStore = useAuthStore()
+
+// 用户信息
+const user = computed(() => authStore.userInfo)
+
+// 下拉菜单状态
+const showDropdown = ref(false)
+const dropdownRef = ref<HTMLElement | null>(null)
+
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value
+}
+
+const closeDropdown = () => {
+  showDropdown.value = false
+}
+
+// 点击外部关闭
+const handleClickOutside = (event: MouseEvent) => {
+  const target = event.target as Node
+  if (dropdownRef.value && !dropdownRef.value.contains(target)) {
+    closeDropdown()
   }
 }
- */
+
+// 注销
+const handleLogout = async () => {
+  try {
+    await authStore.logout()
+    closeDropdown()
+  } catch (error) {
+    console.error('注销失败:', error)
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>

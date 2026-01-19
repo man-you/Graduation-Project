@@ -20,6 +20,7 @@ import {
   PhBooks,
   PhChalkboardTeacher,
   PhUserCircle,
+  PhSignOut,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
@@ -44,4 +45,5 @@ export const icons = {
   PhBooks,
   PhChalkboardTeacher,
   PhUserCircle,
+  PhSignOut,
 }
