@@ -18,5 +18,5 @@ export function setToken(token: string) {
   Cookies.set(TOKEN_KEY, token, DEFAULT_COOKIE_OPTIONS)
 }
 export const removeToken = () => {
-  Cookies.remove('accessToken', { path: '/' })
+  Cookies.remove(TOKEN_KEY, { path: '/' })
 }

@@ -7,7 +7,7 @@ const studentRoutes: Array<RouteRecordRaw> = [
     component: () => import('@/views/study/study.vue'),
     meta: {
       title: '学生中心',
-      public: true, //  明确声明：不走权限
+      // public: true, //  明确声明：不走权限
       roles: ['student'],
     },
   },

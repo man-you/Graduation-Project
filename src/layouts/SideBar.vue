@@ -128,14 +128,9 @@ const handleClickOutside = (event: MouseEvent) => {
 
 // 注销
 const handleLogout = async () => {
-  try {
-    await authStore.logout()
-    closeDropdown()
-  } catch (error) {
-    console.error('注销失败:', error)
-  }
+  authStore.logout()
+  closeDropdown()
 }
-
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })

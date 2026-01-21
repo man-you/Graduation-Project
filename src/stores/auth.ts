@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { loginApi, registerApi, getUserInfoApi } from '@/api/mock/user'
 import router from '@/router'
 import { ROLE_HOME_MAP } from '@/router/config/roleHomeMap'
+import { nextTick } from 'vue'
 
 interface UserState {
   token: string | null
@@ -36,6 +37,8 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: { email: string; password: string }) {
       const res = await loginApi(credentials)
 
+      console.log(res)
+
       const { accessToken, user } = res
 
       this.token = accessToken
@@ -52,7 +55,10 @@ export const useAuthStore = defineStore('auth', {
 
       // 跳转
       const role = this.userRole
+
       const targetPath = role && ROLE_HOME_MAP[role] ? ROLE_HOME_MAP[role] : '/'
+
+      console.log('targetPath', targetPath)
 
       router.replace(targetPath)
 
@@ -62,8 +68,6 @@ export const useAuthStore = defineStore('auth', {
     // 注册（注册即登录）
     async register(credentials: { email: string; password: string; role: string }) {
       const res = await registerApi(credentials)
-
-      console.log(res)
 
       const { accessToken, user } = res
 
@@ -93,6 +97,8 @@ export const useAuthStore = defineStore('auth', {
     async getUserInfo() {
       const res = await getUserInfoApi()
 
+      console.log('response', res)
+
       this.userInfo = res.user
       this.userRole = res.user.role
       this.isUserInfoLoaded = true
@@ -112,10 +118,11 @@ export const useAuthStore = defineStore('auth', {
       this.isAuthOpen = false
       removeToken()
 
-      // 跳转到公共首页
-      router.replace('/')
+      // 使用nextTick确保状态更新完成后再跳转
+      nextTick(() => {
+        router.replace('/')
+      })
     },
-
     // UI 行为
     openAuth(mode: 'login' | 'register') {
       this.isAuthOpen = true
