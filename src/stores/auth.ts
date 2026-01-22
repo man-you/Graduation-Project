@@ -1,13 +1,15 @@
 import { setToken, removeToken } from '@/util/authUtil'
 import { defineStore } from 'pinia'
-import { loginApi, registerApi, getUserInfoApi } from '@/api/mock/user'
+import { loginApi, registerApi, getUserInfoApi } from '@/api/user/user'
 import router from '@/router'
 import { ROLE_HOME_MAP } from '@/router/config/roleHomeMap'
 import { nextTick } from 'vue'
+import type { User } from '@/types/user/user.type'
 
+// store状态接口
 interface UserState {
   token: string | null
-  userInfo: any
+  userInfo: User | null
   userRole: string | null
 
   // 权限系统关键状态
@@ -97,6 +99,8 @@ export const useAuthStore = defineStore('auth', {
     async getUserInfo() {
       const res = await getUserInfoApi()
 
+      console.log('res', res)
+
       console.log('response', res)
 
       this.userInfo = res.user
@@ -104,6 +108,13 @@ export const useAuthStore = defineStore('auth', {
       this.isUserInfoLoaded = true
 
       return res
+    },
+
+    // 更新用户信息
+    setUserInfo(user: User) {
+      this.userInfo = user
+      this.userRole = user.role
+      this.isUserInfoLoaded = true
     },
 
     // 登出
