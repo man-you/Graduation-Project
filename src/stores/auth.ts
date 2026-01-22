@@ -40,8 +40,8 @@ export const useAuthStore = defineStore('auth', {
       console.log(res)
 
       const { accessToken, user } = res
-
       this.token = accessToken
+
       setToken(accessToken)
 
       this.userInfo = user

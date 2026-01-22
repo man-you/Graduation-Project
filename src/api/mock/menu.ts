@@ -55,5 +55,13 @@ export const menuList: MenuItem[] = [
     weight: 'regular',
     isActive: true,
   },
-  { id: 6, title: '设置', icon: PhGear, weight: 'regular', isActive: true },
+  {
+    id: 6,
+    title: '设置',
+    icon: PhGear,
+    weight: 'regular',
+    isActive: true,
+    path: '/setting',
+    roles: ['teacher', 'student'],
+  },
 ]

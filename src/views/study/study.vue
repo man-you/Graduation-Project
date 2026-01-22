@@ -14,7 +14,7 @@
       <!-- 内容区 -->
       <div class="flex-1 bg-slate-50 dark:bg-slate-900">
         <div
-          class="h-full rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-6"
+          class="h-full rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
         >
           <router-view />
         </div>

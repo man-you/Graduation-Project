@@ -10,6 +10,18 @@ const studentRoutes: Array<RouteRecordRaw> = [
       // public: true, //  明确声明：不走权限
       roles: ['student'],
     },
+    children: [
+      {
+        path: 'setting', // 访问路径将是 /student/setting
+        alias: '/setting', // 路由别名
+        name: 'StudentSetting',
+        component: () => import('@/components/Setting.vue'),
+        meta: {
+          title: '设置',
+          roles: ['teacher', 'student'],
+        },
+      },
+    ],
   },
 ]
 

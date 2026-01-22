@@ -78,7 +78,8 @@
       :class="open ? 'opacity-100' : 'opacity-0 pointer-events-none'"
     >
       <div
-        v-for="menu in menuList"
+        v-for="menu in filteredMenuList"
+        @click="handleMenuClick(menu)"
         :key="menu.id"
         class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700/50 transition-colors cursor-pointer"
       >
@@ -93,18 +94,34 @@
 
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { menuList } from '@/api/mock/menu'
+import { getFilteredMenuList } from '@/util/routerUtil'
 import { useAuthStore } from '@/stores/auth'
 import defaultAvatar from '@/assets/R.png'
+import type { MenuItem } from '@/api/mock/menu'
+import { useRouter } from 'vue-router'
 
 defineProps<{
   open: boolean
 }>()
 
 const authStore = useAuthStore()
+const router = useRouter()
 
 // 用户信息
 const user = computed(() => authStore.userInfo)
+
+// 根据用户角色过滤菜单
+const filteredMenuList = computed(() => {
+  const userRole = user.value?.role || null
+  return getFilteredMenuList(userRole)
+})
+
+// 菜单点击
+const handleMenuClick = (menu: MenuItem) => {
+  if (menu.path) {
+    router.push(menu.path)
+  }
+}
 
 // 下拉菜单状态
 const showDropdown = ref(false)

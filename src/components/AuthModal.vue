@@ -180,10 +180,14 @@ const handleAuthSubmit = async () => {
     password.value = ''
     role.value = 'student'
   } catch (error: any) {
-    const status = error?.response?.status
-    console.log('status', status)
-    if (status === 409) {
+    // 根据统一响应格式处理错误
+    const code = error.code || error.response?.status
+    if (code === 409) {
       errorMessage.value = '该邮箱已被注册'
+    } else if (code === 401) {
+      errorMessage.value = '邮箱或密码错误'
+    } else if (error.message) {
+      errorMessage.value = error.message
     } else {
       errorMessage.value = '操作失败，请稍后重试'
     }

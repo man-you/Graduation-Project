@@ -21,6 +21,7 @@ import {
   PhChalkboardTeacher,
   PhUserCircle,
   PhSignOut,
+  PhCamera,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
@@ -46,4 +47,5 @@ export const icons = {
   PhChalkboardTeacher,
   PhUserCircle,
   PhSignOut,
+  PhCamera,
 }

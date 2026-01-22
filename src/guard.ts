@@ -19,7 +19,7 @@ router.beforeEach(async (to) => {
   const token = getToken()
   const authStore = useAuthStore()
 
-  if (to.meta?.public) return true
+  // if (to.meta?.public) return true
 
   if (!token) {
     return WHITE_LIST.includes(to.path) ? true : { path: '/', replace: true }
