@@ -61,6 +61,9 @@ src/
 ├── stores/ # Pinia 状态管理
 │   ├── auth.ts # 认证状态管理（登录/注册模态框）
 │   └── counter.ts # 示例计数器状态
+├── types/ # 数据类型定义
+│   ├── user.ts # 用户信息定义（用户信息）
+│
 ├── util/ # 工具函数（规范为utils，实际命名util）
 │   ├── routerUtil.ts # 路由工具（返回上一级）
 │   └── storageUtil.ts # 本地存储工具（local/sessionStorage）
