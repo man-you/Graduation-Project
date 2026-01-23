@@ -96,7 +96,7 @@
                   </div>
                   <div>
                     <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                      求学寄语
+                      个人简介
                     </p>
                     <p class="text-sm italic leading-relaxed text-slate-500 mt-1">
                       {{ form.bio || '在这个知识的海洋里，勇敢航行。' }}
@@ -170,7 +170,7 @@
                   <div class="space-y-1.5">
                     <label class="form-label-edu">用户角色</label>
                     <input
-                      :value="form.role === 'teacher' ? '教师资历' : '在读身份'"
+                      :value="form.role === 'teacher' ? '教师' : '学生'"
                       readonly
                       class="form-input-edu-readonly"
                     />
