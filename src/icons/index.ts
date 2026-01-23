@@ -1,5 +1,12 @@
 // src/icons/index.ts
 import {
+  PhPencilSimpleLine,
+  PhEnvelopeSimple,
+  PhPhone,
+  PhNotebook,
+  PhUserFocus,
+  PhShieldCheck,
+  PhCloudArrowUp,
   PhSun,
   PhMoon,
   PhGraph,
@@ -48,4 +55,11 @@ export const icons = {
   PhUserCircle,
   PhSignOut,
   PhCamera,
+  PhPencilSimpleLine,
+  PhEnvelopeSimple,
+  PhPhone,
+  PhNotebook,
+  PhUserFocus,
+  PhShieldCheck,
+  PhCloudArrowUp,
 }
