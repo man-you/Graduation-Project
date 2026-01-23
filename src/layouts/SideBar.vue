@@ -112,13 +112,19 @@ const user = computed(() => authStore.userInfo)
 
 // 根据用户角色过滤菜单
 const filteredMenuList = computed(() => {
-  const userRole = user.value?.role || null
-  return getFilteredMenuList(userRole)
+  const role = user.value?.role || null
+  return getFilteredMenuList(role)
 })
 
 // 菜单点击
 const handleMenuClick = (menu: MenuItem) => {
-  if (menu.path) {
+  const role = user.value?.role
+  if (!role) return
+
+  // 优先使用 role 映射路径（兼容 ROLE_ROUTE_MAP）
+  if (menu.pathMap?.[role]) {
+    router.push(menu.pathMap[role])
+  } else if (menu.path) {
     router.push(menu.path)
   }
 }
@@ -148,6 +154,7 @@ const handleLogout = async () => {
   authStore.logout()
   closeDropdown()
 }
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })

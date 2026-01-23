@@ -169,6 +169,14 @@ const handleAuthSubmit = async () => {
         password: password.value,
       })
     } else {
+      const data = {
+        email: email.value,
+        password: password.value,
+        role: role.value,
+      }
+
+      console.log('data', data)
+
       await authStore.register({
         email: email.value,
         password: password.value,
@@ -186,8 +194,6 @@ const handleAuthSubmit = async () => {
       errorMessage.value = '该邮箱已被注册'
     } else if (code === 401) {
       errorMessage.value = '邮箱或密码错误'
-    } else if (error.message) {
-      errorMessage.value = error.message
     } else {
       errorMessage.value = '操作失败，请稍后重试'
     }
