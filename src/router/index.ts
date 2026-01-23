@@ -28,6 +28,13 @@ const constantRoutes = [
     component: () => import('@/views/index.vue'),
   },
   {
+    path: '/student',
+    name: 'StudentLayout',
+    component: () => import('@/views/study/study.vue'),
+    meta: { roles: ['student'] },
+    children: [],
+  },
+  {
     path: '/401',
     name: 'Page401',
     component: () => import('@/views/error-page/401.vue'),
@@ -56,10 +63,6 @@ function createAppRouter(): Router {
   })
 
   // 吞噬型兜底路由：必须在 router 创建完成后、所有业务路由之前统一注册
-  router.addRoute({
-    path: '/:pathMatch(.*)*',
-    redirect: '/404',
-  })
 
   return router
 }

@@ -15,6 +15,7 @@ export interface MenuItem {
   isActive: boolean
   path?: string
   roles?: string[]
+  pathMap?: Record<string, string>
 }
 
 // 菜单列表源数据
@@ -63,5 +64,9 @@ export const menuList: MenuItem[] = [
     isActive: true,
     path: '/setting',
     roles: ['teacher', 'student'],
+    pathMap: {
+      student: '/student/settings',
+      teacher: '/teacher/settings',
+    },
   },
 ]
