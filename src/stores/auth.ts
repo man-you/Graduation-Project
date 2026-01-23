@@ -119,19 +119,24 @@ export const useAuthStore = defineStore('auth', {
 
     // 登出
     logout() {
-      this.token = null
-      this.userInfo = null
-      this.userRole = null
-
-      this.isUserInfoLoaded = false
-      this.isRouteAdded = false
-
-      this.isAuthOpen = false
+      // 1. 先移除 token（路由守卫会立即检测到）
       removeToken()
 
-      // 使用nextTick确保状态更新完成后再跳转
-      nextTick(() => {
-        router.replace('/')
+      // 2. 立即跳转首页（不等待状态重置）
+      const targetPath = '/'
+      router.replace(targetPath)
+
+      // 3. 在跳转完成后重置状态（使用 afterEach 避免影响跳转）
+      router.afterEach(() => {
+        // 仅当已跳转到目标页面时重置
+        if (router.currentRoute.value.path === targetPath) {
+          this.token = null
+          this.userInfo = null
+          this.userRole = null
+          this.isUserInfoLoaded = false
+          this.isRouteAdded = false
+          this.isAuthOpen = false
+        }
       })
     },
     // UI 行为
