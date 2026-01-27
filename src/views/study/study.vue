@@ -12,12 +12,17 @@
       <PageHeader @toggle-sidebar="toggleSidebar" />
 
       <!-- 内容区 -->
-      <div class="flex-1 bg-slate-50 dark:bg-slate-900">
-        <div
-          class="h-full rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700"
-        >
-          <router-view />
-        </div>
+      <div class="flex-1 bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
+        <router-view v-slot="{ Component }">
+          <transition name="page-fade" mode="out-in">
+            <div
+              :key="$route.fullPath"
+              class="h-full rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
+            >
+              <component :is="Component" />
+            </div>
+          </transition>
+        </router-view>
       </div>
     </main>
   </div>
@@ -37,3 +42,21 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 </script>
+
+<style scoped>
+/* 页面切换动画：轻微上浮 + 透明度变化 */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.page-fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+</style>

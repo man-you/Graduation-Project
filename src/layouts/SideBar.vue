@@ -81,10 +81,24 @@
         v-for="menu in filteredMenuList"
         @click="handleMenuClick(menu)"
         :key="menu.id"
-        class="flex items-center px-4 py-3 rounded-lg hover:bg-slate-700/50 transition-colors cursor-pointer"
+        :class="[
+          'flex items-center px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer group',
+          $route.path === menu.path || $route.path === menu.pathMap?.[user?.role]
+            ? 'bg-blue-600/20 text-white shadow-inner border-l-4 border-blue-500 rounded-l-none'
+            : 'hover:bg-slate-700/50 text-slate-300',
+        ]"
       >
-        <component :is="menu.icon" :size="22" :weight="menu.weight" class="mr-3 text-slate-300" />
-        <span class="text-slate-200 font-medium">
+        <component
+          :is="menu.icon"
+          :size="22"
+          :class="[
+            'mr-3 transition-colors',
+            $route.path === menu.path
+              ? 'text-blue-400'
+              : 'text-slate-400 group-hover:text-slate-200',
+          ]"
+        />
+        <span class="font-medium text-[14px]">
           {{ menu.title }}
         </span>
       </div>
