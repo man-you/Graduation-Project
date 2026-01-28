@@ -32,7 +32,7 @@
 import { ref } from 'vue'
 import Sidebar from '@/layouts/SideBar.vue'
 import PageHeader from '@/layouts/PageHeader.vue'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 
 const authStore = useAuthStore()
 

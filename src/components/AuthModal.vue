@@ -125,7 +125,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { PhX } from '@phosphor-icons/vue'
 

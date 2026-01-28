@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import { getToken } from '@/util/authUtil'
 import router from '@/router'
 import { ROLE_ROUTE_MAP } from '@/router/config/roleHomeMap'

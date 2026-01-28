@@ -33,6 +33,8 @@ import {
   PhPlus,
   PhPaperPlaneTilt,
   PhShareNetwork,
+  PhPlusCircle,
+  PhTrash,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
@@ -70,4 +72,6 @@ export const icons = {
   PhPaperPlaneTilt,
   PhClockCounterClockwise,
   PhShareNetwork,
+  PhPlusCircle,
+  PhTrash,
 }

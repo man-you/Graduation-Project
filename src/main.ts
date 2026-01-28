@@ -4,7 +4,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import '@/guard'
-import { icons } from './icons'
+import { icons } from './icons/icon'
 
 async function bootstrap() {
   const app = createApp(App)

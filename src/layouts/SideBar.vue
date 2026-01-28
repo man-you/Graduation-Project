@@ -109,7 +109,7 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { getFilteredMenuList } from '@/util/routerUtil'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import defaultAvatar from '@/assets/R.png'
 import type { MenuItem } from '@/api/mock/menu'
 import { useRouter } from 'vue-router'

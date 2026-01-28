@@ -41,11 +41,11 @@ export const menuList: MenuItem[] = [
     icon: PhChat,
     weight: 'regular',
     isActive: true,
-    path: '/assisatant',
+    path: '/assistant',
     roles: ['teacher', 'student'],
     pathMap: {
-      student: '/student/assisatant',
-      teacher: '/teacher/assisatant',
+      student: '/student/assistant',
+      teacher: '/teacher/assistant',
     },
   },
   {

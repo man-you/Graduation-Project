@@ -8,7 +8,7 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
     meta: { roles: ['student'] },
   },
   {
-    path: 'assisatant',
+    path: 'assistant',
     name: 'StudentChat',
     component: () => import('@/views/public/Chat.vue'),
     meta: { roles: ['student'] },

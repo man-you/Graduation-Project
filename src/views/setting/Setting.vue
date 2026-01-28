@@ -266,10 +266,10 @@
  * 包含：Pinia 状态同步、表单响应式状态、快照比较（脏检查）、API 调用
  */
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import ResultModal from '@/components/ResultModal.vue'
 import defaultAvatar from '@/assets/R.png'
-import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user/user'
+import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user/user.api'
 import { validateSecurityForm } from '@/util/validateSecurityForm'
 import { PhUserFocus, PhShieldCheck } from '@phosphor-icons/vue'
 
