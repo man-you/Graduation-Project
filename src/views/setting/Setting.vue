@@ -261,24 +261,17 @@
 </template>
 
 <script setup lang="ts">
-/** * 核心逻辑层
+/**
+ ** 核心逻辑层
  * 包含：Pinia 状态同步、表单响应式状态、快照比较（脏检查）、API 调用
  */
 import { ref, reactive, computed, onMounted, watch } from 'vue'
-import {
-  PhPencilSimpleLine,
-  PhEnvelopeSimple,
-  PhPhone,
-  PhNotebook,
-  PhUserFocus,
-  PhShieldCheck,
-  PhCloudArrowUp,
-} from '@phosphor-icons/vue'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import ResultModal from '@/components/ResultModal.vue'
 import defaultAvatar from '@/assets/R.png'
-import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user/user'
+import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user/user.api'
 import { validateSecurityForm } from '@/util/validateSecurityForm'
+import { PhUserFocus, PhShieldCheck } from '@phosphor-icons/vue'
 
 /* --- 状态初始化 --- */
 const authStore = useAuthStore()
@@ -447,5 +440,39 @@ const changeAvatar = () => {
 .fade-slide-leave-to {
   opacity: 0;
   transform: translateX(-10px);
+}
+aside {
+  animation: slide-in-left 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+section {
+  animation: slide-in-right 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 增强按钮点击反馈 */
+.btn-edu-primary:active {
+  transform: scale(0.96);
 }
 </style>

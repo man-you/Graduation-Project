@@ -4,7 +4,13 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
   {
     path: 'settings',
     name: 'StudentSettings',
-    component: () => import('@/components/Setting.vue'),
+    component: () => import('@/views/setting/Setting.vue'),
+    meta: { roles: ['student'] },
+  },
+  {
+    path: 'assistant',
+    name: 'StudentChat',
+    component: () => import('@/views/public/Chat.vue'),
     meta: { roles: ['student'] },
   },
 ]

@@ -1,6 +1,7 @@
 // src/icons/index.ts
 import {
   PhPencilSimpleLine,
+  PhClockCounterClockwise,
   PhEnvelopeSimple,
   PhPhone,
   PhNotebook,
@@ -29,6 +30,11 @@ import {
   PhUserCircle,
   PhSignOut,
   PhCamera,
+  PhPlus,
+  PhPaperPlaneTilt,
+  PhShareNetwork,
+  PhPlusCircle,
+  PhTrash,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
@@ -62,4 +68,10 @@ export const icons = {
   PhUserFocus,
   PhShieldCheck,
   PhCloudArrowUp,
+  PhPlus,
+  PhPaperPlaneTilt,
+  PhClockCounterClockwise,
+  PhShareNetwork,
+  PhPlusCircle,
+  PhTrash,
 }

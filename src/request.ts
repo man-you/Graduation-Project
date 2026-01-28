@@ -12,6 +12,7 @@ const request = axios.create({
 request.interceptors.request.use((config) => {
   // 获取cookie中的token
   const token = getToken()
+
   // 将token添加到请求头中
   if (token) {
     config.headers = config.headers || {}

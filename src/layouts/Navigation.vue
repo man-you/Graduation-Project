@@ -66,7 +66,7 @@
 
 <script setup>
 import { ref, watchEffect } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 import { setLocalStorage, getLocalStorage } from '@/util/storageUtil'
 import { PhSun, PhMoon } from '@phosphor-icons/vue'
 

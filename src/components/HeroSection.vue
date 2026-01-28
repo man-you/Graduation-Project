@@ -34,7 +34,7 @@
   </div>
 </template>
 <script setup>
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.store'
 const authStore = useAuthStore()
 // 进入登录模态框
 const handleLogin = () => {
