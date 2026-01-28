@@ -140,7 +140,7 @@
                 <div class="flex items-center justify-between mb-6">
                   <h2 class="text-xl font-bold text-slate-800 flex items-center gap-3">
                     <span class="w-1 h-5 bg-blue-500 rounded-full"></span>
-                    学术档案管理
+                    个人信息
                   </h2>
                 </div>
 
