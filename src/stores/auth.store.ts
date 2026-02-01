@@ -85,7 +85,6 @@ export const useAuthStore = defineStore('auth', {
     },
 
     setUserInfo(user: User) {
-      console.log('setUserInfo', user)
       this.userInfo = user
       this.userRole = user.role
       this.isUserInfoLoaded = true
