@@ -1,4 +1,4 @@
-import { PhChartLine, PhTreeStructure, PhChat, PhBooks, PhGear } from '@phosphor-icons/vue'
+import { PhFolder, PhTreeStructure, PhChat, PhBooks, PhGear } from '@phosphor-icons/vue'
 
 export interface MenuItem {
   id: number
@@ -30,10 +30,16 @@ export const menuList: MenuItem[] = [
   },
   {
     id: 3,
-    title: '学习总览',
-    icon: PhChartLine,
-    weight: 'fill',
+    title: '文件管理',
+    icon: PhFolder,
+    weight: 'regular',
     isActive: true,
+    path: '/files',
+    roles: ['teacher', 'student'],
+    pathMap: {
+      student: '/student/files',
+      teacher: '/teacher/files',
+    },
   },
   {
     id: 4,
