@@ -15,19 +15,31 @@ export interface MenuItem {
 export const menuList: MenuItem[] = [
   {
     id: 1,
-    title: '知识图谱',
-    icon: PhTreeStructure,
-    weight: 'regular',
-    isActive: true,
-    roles: ['teacher', 'student'],
-  },
-  {
-    id: 2,
     title: '我的课程',
     icon: PhBooks,
     weight: 'regular',
     isActive: true,
+    path: '/courses',
+    roles: ['teacher', 'student'],
+    pathMap: {
+      teacher: '/teacher/courses',
+      student: '/student/courses',
+    },
   },
+  {
+    id: 2,
+    title: '知识图谱',
+    icon: PhTreeStructure,
+    weight: 'regular',
+    isActive: true,
+    path: '/knowledges',
+    roles: ['teacher', 'student'],
+    pathMap: {
+      teacher: '/teacher/graphs',
+      student: '/student/graphs',
+    },
+  },
+
   {
     id: 3,
     title: '文件管理',

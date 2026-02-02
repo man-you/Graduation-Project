@@ -2,6 +2,18 @@ import type { RouteRecordRaw } from 'vue-router'
 
 export const studentChildrenRoutes: RouteRecordRaw[] = [
   {
+    path: 'courses',
+    name: 'StudentCourses',
+    component: () => import('@/views/student/CourseList.vue'),
+    meta: { roles: ['student'] },
+  },
+  {
+    path: 'graphs',
+    name: 'StudentKnowledges',
+    component: () => import('@/views/public/Graph.vue'),
+    meta: { roles: ['student'] },
+  },
+  {
     path: 'files',
     name: 'StudentFiles',
     component: () => import('@/views/public/FileManager.vue'),
