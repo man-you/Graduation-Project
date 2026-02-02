@@ -30,7 +30,7 @@ const constantRoutes = [
   {
     path: '/student',
     name: 'StudentLayout',
-    component: () => import('@/views/study/study.vue'),
+    component: () => import('@/views/public/Home.vue'),
     meta: { roles: ['student'] },
     children: [],
   },

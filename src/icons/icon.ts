@@ -35,6 +35,7 @@ import {
   PhShareNetwork,
   PhPlusCircle,
   PhTrash,
+  PhArrowRight,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
@@ -74,4 +75,5 @@ export const icons = {
   PhShareNetwork,
   PhPlusCircle,
   PhTrash,
+  PhArrowRight,
 }

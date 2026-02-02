@@ -83,7 +83,7 @@
         :key="menu.id"
         :class="[
           'flex items-center px-4 py-3 rounded-lg transition-all duration-200 cursor-pointer group',
-          $route.path === menu.path || $route.path === menu.pathMap?.[user?.role]
+          $route.path === menu.path || (user?.role && $route.path === menu.pathMap?.[user.role])
             ? 'bg-blue-600/20 text-white shadow-inner border-l-4 border-blue-500 rounded-l-none'
             : 'hover:bg-slate-700/50 text-slate-300',
         ]"
@@ -165,8 +165,10 @@ const handleClickOutside = (event: MouseEvent) => {
 
 // 注销
 const handleLogout = async () => {
-  authStore.logout()
-  closeDropdown()
+  if (confirm('确定要注销吗？')) {
+    authStore.logout()
+    closeDropdown()
+  }
 }
 
 onMounted(() => {

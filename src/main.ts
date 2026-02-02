@@ -5,6 +5,7 @@ import App from './App.vue'
 import router from './router'
 import '@/guard'
 import { icons } from './icons/icon'
+import 'remixicon/fonts/remixicon.css'
 
 async function bootstrap() {
   const app = createApp(App)
