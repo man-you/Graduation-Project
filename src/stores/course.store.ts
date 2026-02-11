@@ -1,11 +1,15 @@
 import { defineStore } from 'pinia'
-import type { Course } from '@/types/course/course.type'
-import { getCourseListApi } from '@/api/course/course.api'
+import type { Course, CourseNode} from '@/types/course/course.type'
+import { getCourseListApi,getCouseNodesApi } from '@/api/course/course.api'
 
 export const useCourseStore = defineStore('course', {
   state: () => ({
     courseList: [] as Course[],
+    CourseNodes: [] as CourseNode[],
+    CourseId:null as null | number,
     loading: false,
+    nodesLoading: false,
+
   }),
 
   actions: {
@@ -34,6 +38,35 @@ export const useCourseStore = defineStore('course', {
       return Math.min(100, Math.round((cur / total) * 100))
     },
 
-    // 获取当前课程的所有节点
+    /**
+     * 获取当前课程的所有节点
+     * @param courseId 课程 ID
+     * @param forceFetch 是否强制刷新
+     */
+    async getCourseNodes(courseId:number,forceFetch = false){
+      // 如果课程Id不变且已有数据，则不重复请求
+      if(!forceFetch && this.CourseId === courseId && this.CourseNodes.length > 0) return
+
+      this.nodesLoading = true
+
+
+      try{
+        const res =  await getCouseNodesApi(courseId)
+        this.CourseNodes = res
+      }catch(error){
+        console.error(`获取课程 ID 为 ${courseId} 的节点失败:`, error)
+        this.CourseNodes = [] // 出错时清空，防止渲染错误数据
+      } finally {
+        this.nodesLoading = false
+      }
+    },
+
+    /**
+     * 重置节点状态（切换课程时手动调用或由 action 自动处理）
+     */
+    resetCourseNodes() {
+      this.CourseNodes = []
+      this.CourseId = null
+    }
   },
 })
