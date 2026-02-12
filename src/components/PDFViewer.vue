@@ -62,15 +62,6 @@
         >
           <PhX :size="16" class="mr-2" /> 关闭预览
         </button>
-
-        <a
-          v-if="originalUrl"
-          :href="originalUrl"
-          target="_blank"
-          class="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-all shadow-md"
-        >
-          <PhDownloadSimple :size="16" class="mr-2" /> 下载原件
-        </a>
       </div>
     </div>
   </div>
@@ -116,7 +107,8 @@ const fetchResource = async () => {
   try {
     // 1. 获取预签名 URL
     const signedUrl = await getNodeResourceApi(props.nodeId)
-    originalUrl.value = signedUrl
+
+    originalUrl.value = signedUrl[0]
 
     // 2. 核心：通过 fetch 获取 Blob，强制浏览器在内存处理数据而非跳转下载
     const response = await fetch(signedUrl)

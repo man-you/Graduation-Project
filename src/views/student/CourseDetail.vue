@@ -17,9 +17,19 @@
           />
           返回课程
         </button>
-        <h1 class="text-xl font-extrabold tracking-tight text-slate-900 leading-tight mb-4">
+
+        <h1
+          class="text-xl font-extrabold tracking-tight text-slate-900 leading-tight mb-4 cursor-pointer hover:text-blue-600 transition-colors group"
+          @click="showCourseGraph"
+        >
           {{ courseTitle }}
+          <span
+            class="inline-block ml-2 text-xs font-normal text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            点击查看知识图谱
+          </span>
         </h1>
+
         <div class="flex items-center gap-2">
           <div
             class="flex items-center bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[13px] font-bold"
@@ -39,6 +49,7 @@
           <h2 class="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 px-3">
             {{ lvl2.nodeName }}
           </h2>
+
           <div v-for="lvl3 in lvl2.childNodes" :key="lvl3.id" class="mb-1">
             <div
               @click="toggleExpand(lvl3.id)"
@@ -58,10 +69,12 @@
                 />
                 <span
                   class="text-[15px] font-bold text-slate-700 truncate group-hover:text-slate-900"
-                  >{{ lvl3.nodeName }}</span
                 >
+                  {{ lvl3.nodeName }}
+                </span>
               </div>
             </div>
+
             <transition name="list">
               <ul
                 v-show="expandedNodes.includes(lvl3.id)"
@@ -89,7 +102,7 @@
                       <div
                         v-else
                         :class="[
-                          'w-1.5 h-1.5 rounded-full transition-colors',
+                          'w-1.5 h-1.5 rounded-full',
                           currentNode?.id === lvl4.id
                             ? 'bg-blue-600'
                             : 'bg-slate-200 group-hover:bg-slate-400',
@@ -114,7 +127,7 @@
       <div class="p-6 border-t border-slate-100 bg-white">
         <div class="flex justify-between items-end mb-3">
           <span class="text-[13px] font-black text-slate-400 uppercase tracking-widest"
-            >Progress</span
+            >学习进度</span
           >
           <span class="text-blue-600 text-[15px] font-black">{{ progressPercent }}%</span>
         </div>
@@ -130,13 +143,31 @@
     <main class="flex-1 relative flex flex-col h-full overflow-hidden bg-slate-50">
       <div
         v-if="currentNode"
-        class="flex-1 overflow-y-auto p-8 lg:p-12 scroll-smooth"
+        class="flex-1 overflow-y-auto p-5 lg:p-12 scroll-smooth"
         ref="contentScrollRef"
       >
         <div class="max-w-4xl mx-auto w-full space-y-8 pb-32">
-          <PDFViewer :node-id="currentNode.id" :key="currentNode.id" />
+          <!-- 视频播放展位区域 -->
+          <div
+            class="bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden aspect-video relative group border border-slate-800 shadow-blue-900/10"
+          >
+            <img
+              src="https://picsum.photos/seed/course/1280/720"
+              class="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700"
+            />
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+              <div
+                class="w-20 h-20 rounded-full bg-blue-600 shadow-xl shadow-blue-600/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform cursor-pointer"
+              >
+                <PhPlay :size="32" weight="fill" class="ml-1" />
+              </div>
+              <p class="text-sm font-bold tracking-widest text-blue-100">START LESSON</p>
+            </div>
+          </div>
 
-          <div class="bg-white rounded-[2rem] shadow-sm border border-slate-200 p-8 lg:p-14">
+          <div
+            class="bg-white rounded-[2rem] shadow-sm border border-slate-200 p-8 lg:p-14 relative"
+          >
             <header class="mb-10">
               <div class="flex items-center gap-3 mb-6">
                 <span
@@ -164,13 +195,38 @@
                 </div>
               </div>
             </article>
+
+            <div v-if="!showPdfViewer" class="absolute">
+              <button
+                @click="showPdfViewer = true"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors duration-300 flex items-center gap-2 shadow-md hover:shadow-lg text-sm"
+              >
+                <PhFilePdf :size="16" weight="fill" />
+                课程讲义
+              </button>
+            </div>
+          </div>
+
+          <!-- PDFViewer 显示区域 -->
+          <div
+            v-if="showPdfViewer"
+            class="bg-white rounded-[2rem] shadow-sm border border-slate-200 p-8 lg:p-14 relative"
+          >
+            <button
+              @click="showPdfViewer = false"
+              class="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-full transition-colors duration-200 z-10"
+              title="关闭预览"
+            >
+              <PhX :size="20" weight="bold" />
+            </button>
+            <PDFViewer :node-id="currentNode.id" :key="currentNode.id" :show-preview="true" />
           </div>
         </div>
       </div>
 
-      <div class="absolute bottom-10 left-0 right-0 z-20 px-6">
+      <div class="absolute bottom-10 left-0 right-0 z-20 px-6 pointer-events-none">
         <div
-          class="max-w-lg mx-auto bg-slate-900/95 backdrop-blur-xl text-white rounded-3xl p-2 shadow-2xl flex items-center justify-between border border-white/10"
+          class="max-w-lg mx-auto bg-slate-900/95 backdrop-blur-xl text-white rounded-3xl p-2 shadow-2xl flex items-center justify-between border border-white/10 pointer-events-auto"
         >
           <button
             @click="goPrev"
@@ -180,9 +236,9 @@
             <PhArrowFatLineLeft :size="18" class="mr-2" weight="fill" /> 上一节
           </button>
           <div class="flex flex-col items-center px-10 border-x border-white/10">
-            <span class="text-[14px] font-black font-mono tracking-wider"
-              >{{ currentStepIndex + 1 }} / {{ flatNodes.length }}</span
-            >
+            <span class="text-[14px] font-black font-mono tracking-wider">
+              {{ currentStepIndex + 1 }} / {{ flatNodes.length }}
+            </span>
           </div>
           <button
             @click="goNext"
@@ -201,56 +257,47 @@
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  PhArrowLeft,
-  PhClock,
-  PhCaretRight,
-  PhCheckCircle,
-  PhPlay,
-  PhInfo,
-  PhArrowFatLineLeft,
-  PhArrowFatLineRight,
-} from '@phosphor-icons/vue'
-
 import { useCourseStore } from '@/stores/course.store'
 import { routerBack } from '@/util/routerUtil'
 import PDFViewer from '@/components/PDFViewer.vue'
+import { PhFilePdf, PhX, PhPlay } from '@phosphor-icons/vue'
 
 const route = useRoute()
 const router = useRouter()
 const courseStore = useCourseStore()
 
-// --- Data From Store ---
+// --- Store 数据绑定 ---
 const { CourseNodes: courseData, courseList } = storeToRefs(courseStore)
 
-// --- Local State ---
-const expandedNodes = ref([])
-const currentNode = ref(null)
+// --- 响应式状态 ---
+const expandedNodes = ref([]) // 记录展开的 LEVEL3 节点 ID
+const currentNode = ref(null) // 当前选中的 LEVEL4 节点
 const contentScrollRef = ref(null)
+const showPdfViewer = ref(false) // 控制 PDFViewer 的显示状态
 
-// --- Computed ---
+// --- 计算属性 ---
+
+// 获取当前课程的元数据
 const currentCourseMeta = computed(() => {
   const id = Number(route.params.id)
   return courseList.value.find((c) => c.id === id) || {}
 })
 
+// 课程标题优先从 API 返回的树结构中取，否则取元数据
 const courseTitle = computed(() => {
-  if (courseData.value && courseData.value.length > 0) return courseData.value[0].nodeName
-  return currentCourseMeta.value.title || '课程详情'
+  return courseData.value?.[0]?.nodeName || currentCourseMeta.value.title || '课程详情'
 })
 
+// 计算格式化时长
 const totalDuration = computed(() => {
-  const totalSeconds = currentCourseMeta.value.estimatedDuration || 0
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  return `${hours}h ${minutes}m`
+  const seconds = currentCourseMeta.value.estimatedDuration || 0
+  return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
 })
 
-// 将嵌套树平铺，方便做“上一节/下一节”跳转
+//平铺所有可学习节点 (Level 4)，用于上一节/下一节导航
 const flatNodes = computed(() => {
   const list = []
-  if (!courseData.value || !courseData.value[0]) return list
-  courseData.value[0].childNodes?.forEach((l2) => {
+  courseData.value?.[0]?.childNodes?.forEach((l2) => {
     l2.childNodes?.forEach((l3) => {
       l3.childNodes?.forEach((l4) => {
         list.push({ ...l4, parentNodeId: l3.id })
@@ -260,10 +307,12 @@ const flatNodes = computed(() => {
   return list
 })
 
-const currentStepIndex = computed(() =>
-  flatNodes.value.findIndex((n) => n.id === currentNode.value?.id),
-)
+// 当前节点在列表中的索引
+const currentStepIndex = computed(() => {
+  return flatNodes.value.findIndex((n) => n.id === currentNode.value?.id)
+})
 
+// 计算学习进度百分比
 const progressPercent = computed(() => {
   const total = flatNodes.value.length
   if (total === 0) return 0
@@ -274,35 +323,48 @@ const progressPercent = computed(() => {
 const isFirst = computed(() => currentStepIndex.value <= 0)
 const isLast = computed(() => currentStepIndex.value >= flatNodes.value.length - 1)
 
-// --- Methods ---
+// --- 生命周期与逻辑处理 ---
+
 onMounted(async () => {
   const courseId = Number(route.params.id)
   if (!courseId) return router.push('/course')
 
-  await courseStore.getCourseNodes(courseId)
+  try {
+    await courseStore.getCourseNodes(courseId)
 
-  // 默认定位到第一个未完成章节
-  if (flatNodes.value.length > 0) {
-    const firstUnfinished = flatNodes.value.find((n) => !n.isCompleted) || flatNodes.value[0]
-    handleNodeClick(firstUnfinished, firstUnfinished.parentNodeId)
+    // 默认行为：定位到第一个未完成章节，若都完成则选第一章
+    if (flatNodes.value.length > 0) {
+      const target = flatNodes.value.find((n) => !n.isCompleted) || flatNodes.value[0]
+      handleNodeClick(target, target.parentNodeId)
+    }
+  } catch (error) {
+    console.error('初始化课程数据失败:', error)
   }
 })
 
+// 目录展开/收起切换
 const toggleExpand = (id) => {
   const idx = expandedNodes.value.indexOf(id)
-  idx > -1 ? expandedNodes.value.splice(idx, 1) : expandedNodes.value.push(id)
+  if (idx > -1) expandedNodes.value.splice(idx, 1)
+  else expandedNodes.value.push(id)
 }
 
+/**
+ * 处理节点切换逻辑
+ * @param node 选中的 LEVEL4 节点
+ * @param parentId 父级 LEVEL3 节点 ID（用于自动展开）
+ */
 const handleNodeClick = (node, parentId) => {
   if (!node || currentNode.value?.id === node.id) return
+
   currentNode.value = node
 
-  // 如果父级目录没展开，自动展开它
+  // 确保父目录处于展开状态
   if (parentId && !expandedNodes.value.includes(parentId)) {
     expandedNodes.value.push(parentId)
   }
 
-  // 滚动回到顶部
+  // 页面滚动重置
   contentScrollRef.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -321,6 +383,7 @@ const goPrev = () => {
 }
 
 const goBack = () => routerBack()
+const showCourseGraph = () => router.push({ name: 'StudentKnowledges' })
 </script>
 
 <style scoped>
@@ -338,7 +401,7 @@ const goBack = () => routerBack()
 .list-enter-active,
 .list-leave-active {
   transition: all 0.3s ease;
-  max-height: 500px;
+  max-height: 800px;
   overflow: hidden;
 }
 .list-enter-from,

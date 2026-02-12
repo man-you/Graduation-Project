@@ -14,7 +14,7 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
     meta: { roles: ['student'] },
   },
   {
-    path: 'graphs',
+    path: 'course/graphs',
     name: 'StudentKnowledges',
     component: () => import('@/views/public/Graph.vue'),
     meta: { roles: ['student'] },
