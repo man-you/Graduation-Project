@@ -32,6 +32,7 @@ const constantRoutes = [
     name: 'StudentLayout',
     component: () => import('@/views/public/Home.vue'),
     meta: { roles: ['student'] },
+    redirect: '/student/courses',
     children: [],
   },
   {
@@ -44,7 +45,6 @@ const constantRoutes = [
     name: 'Page404',
     component: () => import('@/views/error-page/404.vue'),
   },
-  // ⚠️ 注意：
   // 这个兜底路由不能直接放在 constantRoutes 里，
   // 否则会在动态路由 addRoute 之前注册，导致 student / teacher 等动态路由无法匹配
   // { path: '/:pathMatch(.*)*', redirect: '/404', hidden: true },

@@ -7,17 +7,11 @@
         class="p-6 border-b border-slate-100 flex-shrink-0 bg-white/80 backdrop-blur-md sticky top-0 z-20"
       >
         <button
-          class="flex items-center text-[14px] font-bold text-blue-600 hover:text-blue-700 transition-colors group mb-5"
           @click="goBack"
+          class="group flex items-center justify-center w-10 h-10 -ml-2 mb-4 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-500 hover:bg-slate-100 hover:text-blue-600 hover:border-blue-100 transition-colors"
         >
-          <PhArrowLeft
-            :size="14"
-            weight="bold"
-            class="mr-2 group-hover:-translate-x-0.5 transition-transform"
-          />
-          返回课程
+          <PhArrowLeft :size="18" weight="bold" />
         </button>
-
         <h1
           class="text-xl font-extrabold tracking-tight text-slate-900 leading-tight mb-4 cursor-pointer hover:text-blue-600 transition-colors group"
           @click="showCourseGraph"
@@ -196,13 +190,21 @@
               </div>
             </article>
 
-            <div v-if="!showPdfViewer" class="absolute">
+            <!-- 集中操作按钮区域 -->
+            <div v-if="!showPdfViewer" class="flex justify-center gap-4 mt-8">
               <button
                 @click="showPdfViewer = true"
-                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors duration-300 flex items-center gap-2 shadow-md hover:shadow-lg text-sm"
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
               >
-                <PhFilePdf :size="16" weight="fill" />
+                <PhFilePdf :size="20" weight="fill" />
                 课程讲义
+              </button>
+              <button
+                @click="loadQuiz"
+                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
+              >
+                <PhExam :size="20" weight="fill" />
+                课后习题
               </button>
             </div>
           </div>
@@ -260,7 +262,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { routerBack } from '@/util/routerUtil'
 import PDFViewer from '@/components/PDFViewer.vue'
-import { PhFilePdf, PhX, PhPlay } from '@phosphor-icons/vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -384,6 +385,10 @@ const goPrev = () => {
 
 const goBack = () => routerBack()
 const showCourseGraph = () => router.push({ name: 'StudentKnowledges' })
+
+const loadQuiz = () => {
+  router.push({ name: 'StudentCourseQuiz', params: { nodeId: currentNode.value?.id } })
+}
 </script>
 
 <style scoped>

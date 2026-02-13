@@ -47,3 +47,5 @@ export const getNodeResourceApi = (nodeId: number): Promise<{ signedUrl: string 
     params: { nodeId }
   })
 }
+
+

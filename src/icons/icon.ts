@@ -46,11 +46,14 @@ import {
   PhInfo,
   PhArrowFatLineLeft,
   PhArrowFatLineRight,
-  PhFilePdf
+  PhFilePdf,
+  PhExam 
+
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
 export const icons = {
+  PhExam,
   PhFilePdf,
   PhArrowLeft,
   PhClock,
