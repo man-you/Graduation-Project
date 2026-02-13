@@ -26,22 +26,10 @@ export const menuList: MenuItem[] = [
       student: '/student/courses',
     },
   },
-  {
-    id: 2,
-    title: '知识图谱',
-    icon: PhTreeStructure,
-    weight: 'regular',
-    isActive: true,
-    path: '/knowledges',
-    roles: ['teacher', 'student'],
-    pathMap: {
-      teacher: '/teacher/graphs',
-      student: '/student/graphs',
-    },
-  },
+
 
   {
-    id: 3,
+    id: 2,
     title: '文件管理',
     icon: PhFolder,
     weight: 'regular',
@@ -54,7 +42,7 @@ export const menuList: MenuItem[] = [
     },
   },
   {
-    id: 4,
+    id: 3,
     title: '知链助手',
     icon: PhChat,
     weight: 'regular',
@@ -67,7 +55,7 @@ export const menuList: MenuItem[] = [
     },
   },
   {
-    id: 5,
+    id: 4,
     title: '设置',
     icon: PhGear,
     weight: 'regular',

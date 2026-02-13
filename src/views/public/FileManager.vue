@@ -62,7 +62,7 @@
             <button
               class="group flex items-center px-6 py-2.5 rounded-2xl bg-blue-600 text-white font-bold shadow-xl shadow-blue-500/25 hover:bg-blue-700 hover:shadow-blue-500/40 active:scale-95 transition-all"
             >
-              <PhCloudArrowUp :size="20" weight="bold" class="mr-2 group-hover:animate-bounce" />
+              <PhCloudArrowUp :size="20" weight="bold" class="mr-2" />
               上传文件
             </button>
           </div>

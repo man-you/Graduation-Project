@@ -30,16 +30,40 @@ import {
   PhUserCircle,
   PhSignOut,
   PhCamera,
-  PhPlus,
-  PhPaperPlaneTilt,
   PhShareNetwork,
   PhPlusCircle,
   PhTrash,
+  PhGhost,
+  PhCaretRight,
+  PhPlus,
+  PhPaperPlaneTilt,
   PhArrowRight,
+  PhDownloadSimple,
+  PhArrowLeft,
+  PhClock,
+  PhCheckCircle,
+  PhPlay,
+  PhInfo,
+  PhArrowFatLineLeft,
+  PhArrowFatLineRight,
+  PhFilePdf,
+  PhExam 
+
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
 export const icons = {
+  PhExam,
+  PhFilePdf,
+  PhArrowLeft,
+  PhClock,
+  PhCheckCircle,
+  PhPlay,
+  PhInfo,
+  PhArrowFatLineLeft,
+  PhArrowFatLineRight,
+  PhDownloadSimple,
+  PhCaretRight,
   PhSun,
   PhMoon,
   PhGraph,
@@ -76,4 +100,5 @@ export const icons = {
   PhPlusCircle,
   PhTrash,
   PhArrowRight,
+  PhGhost,
 }
