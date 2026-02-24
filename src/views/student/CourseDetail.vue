@@ -217,7 +217,6 @@
             <button
               @click="showPdfViewer = false"
               class="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-full transition-colors duration-200 z-10"
-              title="关闭预览"
             >
               <PhX :size="20" weight="bold" />
             </button>
