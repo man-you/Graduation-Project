@@ -22,7 +22,7 @@
             <PhArrowLeft :size="18" weight="bold" />
           </button>
           <h1 class="font-bold text-slate-800 text-base">
-            {{ isSubmitted ? '考核结果' : '章节练习' }}
+            {{ isSubmitted ? '测试结果' : '章节练习' }}
           </h1>
         </div>
 
