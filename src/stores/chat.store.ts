@@ -178,7 +178,7 @@ export const useChatStore = defineStore('chat', {
         case 'done':
           msg.streaming = false
           this.loading = false
-          if (this.messages.length <= 2) {
+          if (this.messages.length <= 2 && this.conversationId !== null) {
             this.loadConversationList(false)
           }
           break
@@ -332,6 +332,74 @@ export const useChatStore = defineStore('chat', {
       if (!this.pagination.hasMore || this.loading) return
       this.pagination.pageNum++
       await this.loadMessages(true)
+    },
+
+    // 启动分析模式
+    async startAnalysisMode(nodeId: number) {
+      // 重置当前对话状态
+      this.resetConversation()
+      
+      try {
+        // 调用后端分析接口，传入分析数据和模式参数
+        const token = getToken()
+        const response = await fetch('/api/v1/chat/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            mode: 'analysis', // 指定分析模式
+            nodeId: nodeId,
+            conversationId: null, // 分析模式不需要conversationId
+            userInput: '' // 分析模式不需要用户输入
+          }),
+        })
+
+        if (!response.body) throw new Error('No response body')
+
+        // 创建助手占位消息
+        const assistantMessage: ChatMessage = {
+          role: 'assistant',
+          content: '正在生成分析报告...',
+          streaming: true,
+          pending: true,
+          createdAt: new Date().toLocaleTimeString(),
+        }
+        this.messages.push(assistantMessage)
+        const assistantIndex = this.messages.length - 1
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          this.consumeChunk(chunk, assistantIndex)
+        }
+      } catch (err) {
+        console.error('[ChatStore] Analysis error:', err)
+        // 添加错误消息
+        this.messages.push({
+          role: 'assistant',
+          content: '生成分析报告时出现错误，请稍后重试。',
+          createdAt: new Date().toLocaleTimeString(),
+        })
+      }
+    },
+
+    // 清理分析模式数据
+    clearAnalysisData() {
+      // 只有在非聊天模式（即分析模式）下才清理数据
+      if (this.conversationId === null && this.messages.length > 0) {
+        this.messages = []
+        this.loading = false
+        this.sseBuffer = ''
+        this.abortController?.abort()
+        this.abortController = null
+      }
     },
   },
 })

@@ -19,6 +19,12 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/student/Quiz.vue'),
     meta: { roles: ['student'] },
   },
+      {
+    path: 'course/analysis/:nodeId',
+    name: 'StudentAnalysis',
+    component: () => import('@/views/student/QuizAnalysis.vue'),
+    meta: { roles: ['student'] },
+  },
   {
     path: 'course/graphs',
     name: 'StudentKnowledges',

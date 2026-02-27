@@ -216,6 +216,18 @@
                 </button>
               </div>
             </div>
+
+            <div
+              v-if="isSubmitted"
+              class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm"
+            >
+              <button
+                @click="showAnalysis"
+                class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm hover:shadow-md"
+              >
+                知识测试分析
+              </button>
+            </div>
           </div>
         </div>
       </main>
@@ -225,7 +237,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useExerciseStore } from '@/stores/exercise.store'
 import { routerBack } from '@/util/routerUtil'
 import {
@@ -240,6 +252,7 @@ import {
 } from '@phosphor-icons/vue'
 
 const route = useRoute()
+const router = useRouter()
 const store = useExerciseStore()
 
 // --- State ---
@@ -330,6 +343,13 @@ const handleSubmit = async () => {
   } catch (err) {
     /* Error handling */
   }
+}
+
+const showAnalysis = () => {
+  router.push({
+    name: 'StudentAnalysis',
+    params: { nodeId: route.params.nodeId },
+  })
 }
 
 // --- Styles Helper ---

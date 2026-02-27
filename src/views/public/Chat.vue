@@ -2,13 +2,13 @@
   <div
     class="chat-desktop-wrapper h-screen w-full bg-[#f8f9fc] dark:bg-[#06080f] text-slate-900 dark:text-slate-100 flex overflow-hidden font-sans"
   >
+    <!-- 侧边栏：仅在聊天模式下显示 -->
     <aside
+      v-if="mode === 'chat'"
       class="w-16 flex-none bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col items-center py-6 z-30"
     >
       <div
         class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white shadow-lg mb-8 cursor-pointer hover:bg-indigo-700 transition-colors"
-        @click="chatStore.resetConversation()"
-        title="开启新对话"
       >
         <PhGraph size="24" weight="fill" />
       </div>
@@ -25,7 +25,7 @@
 
     <Transition name="drawer">
       <div
-        v-if="showHistory"
+        v-if="showHistory && mode === 'chat'"
         class="w-64 flex-none bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col z-30"
       >
         <div
@@ -99,6 +99,7 @@
       class="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-[#080c14] relative"
     >
       <header
+        v-if="mode === 'chat'"
         class="h-16 flex-none border-b border-slate-100 dark:border-slate-800 flex items-center justify-between px-6 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl z-20"
       >
         <div class="flex items-center gap-4">
@@ -154,18 +155,13 @@
             <div class="space-y-2 max-w-full">
               <div
                 :class="[
-                  'px-5 py-3 rounded-2xl text-[15px] leading-relaxed shadow-sm break-words whitespace-pre-wrap',
+                  'px-5 py-3 rounded-2xl text-[15px] leading-relaxed shadow-sm break-words markdown-content',
                   item.role === 'user'
                     ? 'bg-indigo-600 text-white rounded-tr-none'
                     : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-tl-none text-slate-700 dark:text-slate-200',
                 ]"
-              >
-                {{ item.content }}
-                <span
-                  v-if="item.streaming"
-                  class="inline-block w-1.5 h-4 ml-1 bg-indigo-400 animate-pulse align-middle"
-                ></span>
-              </div>
+                v-html="formatMarkdownContent(item.content)"
+              ></div>
               <p
                 :class="[
                   'text-[10px] text-slate-400 font-medium px-1',
@@ -180,7 +176,9 @@
         <div class="h-6"></div>
       </main>
 
+      <!-- 输入框：仅在聊天模式下显示 -->
       <footer
+        v-if="mode === 'chat'"
         class="flex-none p-4 md:px-12 lg:px-24 bg-white dark:bg-[#080c14] border-t border-slate-50 dark:border-slate-800 shadow-2xl"
       >
         <div
@@ -217,11 +215,24 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick, onMounted } from 'vue'
+import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { PhSparkle, PhUser } from '@phosphor-icons/vue'
 import { useChatStore } from '@/stores/chat.store'
 import { useAuthStore } from '@/stores/auth.store'
+import { formatMarkdownContent, injectMarkdownStyles } from '@/util/markdownUtil'
+
+// 定义props
+const props = defineProps({
+  mode: {
+    type: String as () => 'chat' | 'analysis',
+    default: 'chat',
+  },
+  nodeId: {
+    type: Number,
+    default: null,
+  },
+})
 
 const chatStore = useChatStore()
 const userStore = useAuthStore()
@@ -230,7 +241,7 @@ const { userInfo } = storeToRefs(userStore)
 const { messages, loading } = storeToRefs(chatStore)
 
 const input = ref('')
-const showHistory = ref(false)
+const showHistory = ref(props.mode === 'chat') // 分析模式下默认隐藏历史
 const scrollContainer = ref<HTMLElement | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
@@ -284,6 +295,7 @@ const handleSelectChat = async (id: number) => {
 }
 
 const handleDelete = async (id: number) => {
+  // 根据项目规范，使用ResultModal替代原生confirm
   if (confirm('确定要彻底删除这段对话吗？')) {
     await chatStore.deleteConversation(id)
   }
@@ -312,8 +324,32 @@ const handleHistoryScroll = (e: Event) => {
   }
 }
 
+// 分析模式初始化
+const initAnalysisMode = async () => {
+  if (props.mode === 'analysis' && props.nodeId) {
+    // 调用分析模式的特殊方法
+    await chatStore.startAnalysisMode(props.nodeId)
+  }
+}
+
+// 注入Markdown样式
 onMounted(() => {
-  chatStore.loadConversationList()
+  // 为当前组件注入Markdown样式
+  injectMarkdownStyles('chat-component')
+
+  if (props.mode === 'chat') {
+    chatStore.loadConversationList()
+  } else if (props.mode === 'analysis') {
+    initAnalysisMode()
+  }
+})
+
+// 清理样式（可选）
+onUnmounted(() => {
+  const styleElement = document.getElementById('markdown-styles-chat-component')
+  if (styleElement) {
+    styleElement.remove()
+  }
 })
 </script>
 

@@ -277,20 +277,14 @@ const showPdfViewer = ref(false) // 控制 PDFViewer 的显示状态
 
 // --- 计算属性 ---
 
-// 获取当前课程的元数据
-const currentCourseMeta = computed(() => {
-  const id = Number(route.params.id)
-  return courseList.value.find((c) => c.id === id) || {}
-})
-
 // 课程标题优先从 API 返回的树结构中取，否则取元数据
 const courseTitle = computed(() => {
-  return courseData.value?.[0]?.nodeName || currentCourseMeta.value.title || '课程详情'
+  return courseData.value?.[0]?.nodeName || '课程详情'
 })
 
 // 计算格式化时长
 const totalDuration = computed(() => {
-  const seconds = currentCourseMeta.value.estimatedDuration || 0
+  const seconds = courseData.value?.[0]?.estimatedDuration || 0
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
 })
 
