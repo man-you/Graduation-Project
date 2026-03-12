@@ -25,6 +25,10 @@ export const useCourseStore = defineStore('course', {
     currentCourseId: null as null | number,
     loading: false,
     nodesLoading: false,
+    
+    // 智能缓存：按课程ID缓存完整课程数据
+    courseDataCache: new Map<number, { data: CourseNode[], timestamp: number }>(),
+    CACHE_DURATION: 5 * 60 * 1000, // 5分钟缓存有效期
   }),
 
   actions: {
@@ -53,9 +57,28 @@ export const useCourseStore = defineStore('course', {
      * @param forceFetch 是否强制刷新
      */
     async getCourseNodes(courseId: number, forceFetch = false) {
-      // 如果课程Id不变且已有数据，则不重复请求
+      const now = Date.now();
       
-      if (!forceFetch && this.CourseId === courseId && this.CourseNodes.length > 0) return
+      // 检查缓存是否有效
+      if (!forceFetch && this.courseDataCache.has(courseId)) {
+        const cached = this.courseDataCache.get(courseId)!;
+        if (now - cached.timestamp < this.CACHE_DURATION) {
+          // 使用缓存数据
+          this.CourseNodes = cached.data;
+          this.CourseId = courseId;
+          return;
+        }
+      }
+      
+      // 如果课程Id不变且已有数据（且未过期），则不重复请求
+      if (!forceFetch && this.CourseId === courseId && this.CourseNodes.length > 0) {
+        // 更新缓存时间戳
+        this.courseDataCache.set(courseId, { 
+          data: [...this.CourseNodes], 
+          timestamp: now 
+        });
+        return;
+      }
 
       this.nodesLoading = true
       try {
@@ -63,6 +86,12 @@ export const useCourseStore = defineStore('course', {
         console.log('获取到的课程数据为:', res)
         this.CourseNodes = res
         this.CourseId = courseId // 同步当前缓存的 ID
+        
+        // 更新缓存
+        this.courseDataCache.set(courseId, { 
+          data: [...res], 
+          timestamp: now 
+        });
       } catch (error) {
         console.error(`获取课程 ID 为 ${courseId} 的节点失败:`, error)
         this.CourseNodes = [] // 出错时清空，防止渲染错误数据
@@ -74,9 +103,12 @@ export const useCourseStore = defineStore('course', {
     /**
      * 获取并处理图谱数据 (用于可视化界面)
      */
-
     async getGraphData(courseId: number | string) {
       const id = Number(courseId);
+      
+      // 确保完整的课程数据已经加载（利用缓存机制）
+      await this.getCourseNodes(id);
+      
       this.nodesLoading = true
       try {
         const res = await getCourseKnowledgeGraphApi(id)        

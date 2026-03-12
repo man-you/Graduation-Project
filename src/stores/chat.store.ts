@@ -335,7 +335,7 @@ export const useChatStore = defineStore('chat', {
     },
 
     // 启动分析模式
-    async startAnalysisMode(nodeId: number) {
+    async startAnalysisMode(nodeId: number,modes: 'analysis' | 'summary') {
       // 重置当前对话状态
       this.resetConversation()
       
@@ -349,7 +349,7 @@ export const useChatStore = defineStore('chat', {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
           body: JSON.stringify({
-            mode: 'analysis', // 指定分析模式
+            mode: modes, // 指定分析模式或者总结模式
             nodeId: nodeId,
             conversationId: null, // 分析模式不需要conversationId
             userInput: '' // 分析模式不需要用户输入
@@ -392,7 +392,7 @@ export const useChatStore = defineStore('chat', {
 
     // 清理分析模式数据
     clearAnalysisData() {
-      // 只有在非聊天模式（即分析模式）下才清理数据
+      // 只有在非聊天模式（即分析模式或者总结模式）下才清理数据
       if (this.conversationId === null && this.messages.length > 0) {
         this.messages = []
         this.loading = false

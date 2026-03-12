@@ -16,7 +16,7 @@
 
     <!-- 复用Chat组件，传入分析模式和nodeId -->
     <div class="flex-1">
-      <Chat :mode="'analysis'" :node-id="Number($route.params.nodeId)" />
+      <Chat :mode="'summary'" :node-id="Number($route.params.nodeId)" />
     </div>
   </div>
 </template>

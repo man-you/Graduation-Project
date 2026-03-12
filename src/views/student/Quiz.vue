@@ -16,8 +16,8 @@
       >
         <div class="flex items-center gap-4">
           <button
-            @click="handleBack"
-            class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-50 text-slate-400 hover:text-slate-700 transition-colors"
+            @click="goBack"
+            class="group flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-slate-200/60 text-slate-500 hover:bg-slate-100 hover:text-blue-600 hover:border-blue-100 transition-colors"
           >
             <PhArrowLeft :size="18" weight="bold" />
           </button>
@@ -187,7 +187,7 @@
                   </button>
                   <button
                     v-else
-                    @click="handleBack"
+                    @click="goBack"
                     class="text-sm font-bold text-slate-500 hover:text-slate-800 transition-colors"
                   >
                     退出练习
@@ -286,7 +286,7 @@ const progressPercent = computed(() => {
 // 初始化题目与回填作答
 onMounted(async () => {
   const nodeId = Number(route.params.nodeId)
-  if (!nodeId) return handleBack()
+  if (!nodeId) return goBack()
   await store.getExercises(nodeId)
   loadAnswerFromState()
 })
@@ -403,7 +403,7 @@ const getGridClass = (ex, index) => {
 }
 
 const getResultById = (id) => store.submitResult?.details.find((d) => d.exerciseId === id)
-const handleBack = () => routerBack()
+const goBack = () => routerBack()
 const getExerciseTypeText = (t) =>
   ({ SINGLE_CHOICE: '单选题', FILL_BLANK: '填空题', TRUE_FALSE: '判断题' })[t] || '题目'
 </script>
