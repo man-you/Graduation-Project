@@ -156,7 +156,7 @@
                   </div>
                 </div>
 
-                <div class="mt-4 pt-4 border-t border-blue-200/50 relative z-10">
+                <div class="mt-4 pt-4 border-t border-blue-200/50 relative z-10 space-y-3">
                   <!-- 下载按钮 -->
                   <button
                     @click="
@@ -170,6 +170,13 @@
                     <!-- 下载图标 - 替换为 PhDownloadSimple -->
                     <PhDownloadSimple width="18" height="18" />
                     确认下载
+                  </button>
+                  <!-- 进入课程小节按钮 -->
+                  <button
+                    @click="enterCourseSection(selectedNode.id)"
+                    class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-medium transition shadow hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 text-sm flex items-center justify-center gap-2"
+                  >
+                    进入课程小节
                   </button>
                 </div>
               </div>
@@ -186,6 +193,13 @@
                   模块。
                 </p>
               </div>
+              <!-- 总结当前知识点按钮 -->
+              <button
+                @click="summarizeKnowledgePoint(selectedNode)"
+                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition shadow hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 text-sm flex items-center justify-center gap-2"
+              >
+                总结当前知识点
+              </button>
             </div>
 
             <!-- 非教学资源节点的显示（1-3层）：显示子节点列表 -->
@@ -235,10 +249,12 @@ import { onMounted, ref, onUnmounted, watch } from 'vue'
 import * as d3 from 'd3'
 import { storeToRefs } from 'pinia'
 import { useCourseStore } from '@/stores/course.store'
+import { useRouter } from 'vue-router'
 
 // --- Store 集成 ---
 const courseStore = useCourseStore()
 const { graphData, nodesLoading } = storeToRefs(courseStore)
+const router = useRouter()
 
 // --- 状态控制 ---
 const isLegendExpanded = ref(true) // 图例面板是否展开
@@ -270,6 +286,53 @@ const handleDownload = (url, name) => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+}
+
+// --- 核心功能：进入课程小节 ---
+/**
+ * @param {number} nodeId - LEVEL4节点的ID，用于在CourseDetail中定位到对应小节
+ */
+const enterCourseSection = (nodeId) => {
+  if (!nodeId) {
+    // 使用 ResultModal 替代原生 alert
+    // 这里暂时保留 alert 以便快速验证功能，后续应替换为 ResultModal
+    alert('无法进入课程小节，请稍后重试')
+    return
+  }
+
+  // 获取当前图谱对应的课程ID
+  const courseId = courseStore.currentCourseId
+
+  if (!courseId) {
+    alert('课程信息未加载，请稍后重试')
+    return
+  }
+
+  // 导航到课程详情页面，并通过query参数传递要聚焦的节点ID
+  router.push({
+    name: 'StudentCourseDetail',
+    params: { id: courseId },
+    query: { nodeId: nodeId },
+  })
+}
+
+// --- 核心功能：总结当前知识点 ---
+/**
+ * @param {Object} node - 当前选中的知识点节点
+ */
+const summarizeKnowledgePoint = (node) => {
+  if (!node) {
+    // 使用 ResultModal 替代原生 alert
+    // 这里暂时保留 alert 以便快速验证功能，后续应替换为 ResultModal
+    alert('无法获取知识点信息，请稍后重试')
+    return
+  }
+
+  // 导航到知识点总结页面，并通过params传递nodeId
+  router.push({
+    name: 'StudentSummary',
+    params: { nodeId: node.id }
+  })
 }
 
 // --- 配置项 ---

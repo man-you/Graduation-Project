@@ -108,6 +108,7 @@ const fetchResource = async () => {
     // 1. 获取预签名 URL
     const signedUrl = await getNodeResourceApi(props.nodeId)
 
+    // 2.下表为0的地址为PDF文件地址
     originalUrl.value = signedUrl[0]
 
     // 2. 核心：通过 fetch 获取 Blob，强制浏览器在内存处理数据而非跳转下载

@@ -23,7 +23,7 @@
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         <p class="mt-4 text-lg font-medium text-slate-600 dark:text-slate-400">加载中...</p>
       </div>
-      
+
       <!-- 主要内容 -->
       <main v-else class="flex flex-col flex-auto overflow-y-auto overflow-x-hidden">
         <header
@@ -352,15 +352,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import {
-  PhPlus,
   PhFolder,
   PhFile,
-  PhInfo,
   PhX,
   PhFolderOpen,
   PhFileSearch,
-  PhMagnifyingGlass,
-  PhQuestion,
   PhCaretRight,
   PhFolderPlus,
   PhCloudArrowUp,

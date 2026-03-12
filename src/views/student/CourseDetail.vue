@@ -13,12 +13,12 @@
           <PhArrowLeft :size="18" weight="bold" />
         </button>
         <h1
-          class="text-xl font-extrabold tracking-tight text-slate-900 leading-tight mb-4 cursor-pointer hover:text-blue-600 transition-colors group"
+          class="text-xl font-extrabold tracking-tight text-blue-600 leading-tight mb-4 cursor-pointer"
           @click="showCourseGraph"
         >
           {{ courseTitle }}
           <span
-            class="inline-block ml-2 text-xs font-normal text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity"
+            class="inline-block ml-2 text-xs font-normal text-slate-400"
           >
             点击查看知识图谱
           </span>
@@ -141,21 +141,29 @@
         ref="contentScrollRef"
       >
         <div class="max-w-4xl mx-auto w-full space-y-8 pb-32">
-          <!-- 视频播放展位区域 -->
+          <!-- 视频播放区域 -->
           <div
             class="bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden aspect-video relative group border border-slate-800 shadow-blue-900/10"
           >
-            <img
-              src="https://picsum.photos/seed/course/1280/720"
-              class="w-full h-full object-cover opacity-50 group-hover:scale-105 transition-transform duration-700"
-            />
-            <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
-              <div
-                class="w-20 h-20 rounded-full bg-blue-600 shadow-xl shadow-blue-600/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform cursor-pointer"
-              >
-                <PhPlay :size="32" weight="fill" class="ml-1" />
+            <!-- 实际视频播放器 -->
+            <video
+              v-if="videoUrl"
+              :src="videoUrl"
+              class="w-full h-full object-cover"
+              controls
+              @loadedmetadata="onVideoLoaded"
+            ></video>
+
+            <!-- 视频占位区域（当没有视频URL时显示） -->
+            <div v-else class="w-full h-full relative">
+              <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+                <div
+                  @click="loadAndPlayVideo"
+                  class="w-20 h-20 rounded-full bg-blue-600 shadow-xl shadow-blue-600/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform cursor-pointer"
+                >
+                  <PhPlay :size="32" weight="fill" class="ml-1" />
+                </div>
               </div>
-              <p class="text-sm font-bold tracking-widest text-blue-100">START LESSON</p>
             </div>
           </div>
 
@@ -255,12 +263,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { routerBack } from '@/util/routerUtil'
 import PDFViewer from '@/components/PDFViewer.vue'
+import { getNodeResourceApi } from '@/api/course/course.api'
 
 const route = useRoute()
 const router = useRouter()
@@ -274,23 +283,19 @@ const expandedNodes = ref([]) // 记录展开的 LEVEL3 节点 ID
 const currentNode = ref(null) // 当前选中的 LEVEL4 节点
 const contentScrollRef = ref(null)
 const showPdfViewer = ref(false) // 控制 PDFViewer 的显示状态
+const videoUrl = ref('') // 存储当前视频的URL
+const videoLoading = ref(false) // 视频加载状态
 
 // --- 计算属性 ---
 
-// 获取当前课程的元数据
-const currentCourseMeta = computed(() => {
-  const id = Number(route.params.id)
-  return courseList.value.find((c) => c.id === id) || {}
-})
-
 // 课程标题优先从 API 返回的树结构中取，否则取元数据
 const courseTitle = computed(() => {
-  return courseData.value?.[0]?.nodeName || currentCourseMeta.value.title || '课程详情'
+  return courseData.value?.[0]?.nodeName || '课程详情'
 })
 
 // 计算格式化时长
 const totalDuration = computed(() => {
-  const seconds = currentCourseMeta.value.estimatedDuration || 0
+  const seconds = courseData.value?.[0]?.estimatedDuration || 0
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
 })
 
@@ -330,7 +335,21 @@ onMounted(async () => {
   if (!courseId) return router.push('/course')
 
   try {
+    // 利用 course store 的缓存机制获取课程数据
+    // getCourseNodes 方法会自动检查缓存，避免重复请求
     await courseStore.getCourseNodes(courseId)
+
+    // 从 URL query 参数中获取 nodeId
+    const nodeId = route.query.nodeId
+
+    // 如果 URL 中有 nodeId 且该节点存在，则定位到该节点
+    if (nodeId && flatNodes.value.length > 0) {
+      const targetNode = flatNodes.value.find((n) => n.id.toString() === nodeId.toString())
+      if (targetNode) {
+        handleNodeClick(targetNode, targetNode.parentNodeId)
+        return
+      }
+    }
 
     // 默认行为：定位到第一个未完成章节，若都完成则选第一章
     if (flatNodes.value.length > 0) {
@@ -339,6 +358,14 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('初始化课程数据失败:', error)
+  }
+})
+
+// 监听当前节点变化，重置视频URL
+watch(currentNode, (newNode, oldNode) => {
+  if (newNode && newNode.id !== oldNode?.id) {
+    videoUrl.value = ''
+    videoLoading.value = false
   }
 })
 
@@ -364,8 +391,52 @@ const handleNodeClick = (node, parentId) => {
     expandedNodes.value.push(parentId)
   }
 
+  // 更新 URL query 参数，使用 nodeId
+  if (route.query.nodeId !== node.id.toString()) {
+    router.replace({
+      query: { ...route.query, nodeId: node.id },
+    })
+  }
+
   // 页面滚动重置
   contentScrollRef.value?.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// 加载并播放视频
+const loadAndPlayVideo = async () => {
+  if (!currentNode.value || videoUrl.value || videoLoading.value) return
+
+  videoLoading.value = true
+
+  try {
+    // 调用API获取视频资源签名URL
+    const response = await getNodeResourceApi(currentNode.value.id)
+
+    // 根据需求，视频URL是返回数组中索引为1的元素
+    // 但根据API定义，getNodeResourceApi返回的是{ signedUrl: string }
+    // 如果后端实际返回的是数组，我们需要调整这里
+    if (response && typeof response === 'object') {
+      // 如果返回的是包含signedUrl的对象
+      if (response.signedUrl) {
+        videoUrl.value = response.signedUrl
+      }
+      // 如果返回的是数组（根据用户描述）
+      else if (Array.isArray(response) && response.length > 1) {
+        videoUrl.value = response[1]
+      }
+    }
+  } catch (error) {
+    console.error('获取视频资源失败:', error)
+    // 可以在这里显示错误提示
+  } finally {
+    videoLoading.value = false
+  }
+}
+
+// 视频加载完成回调
+const onVideoLoaded = () => {
+  // 视频元数据加载完成后可以执行的操作
+  console.log('视频加载完成')
 }
 
 const goNext = () => {
