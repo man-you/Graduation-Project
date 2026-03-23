@@ -3,10 +3,11 @@ export type UserRole = 'student' | 'teacher' | 'admin'
 /**
  * 单个用户
  */
-export interface User {
+export interface AdminUser {
   id: string;
   email: string;
   userName: string;
+  realName: string;
   identifier: string;
   role: UserRole;
   phoneNumber: string;
@@ -17,7 +18,7 @@ export interface User {
  * 分页获取用户列表
  */
 export interface PaginatedUsersResponse {
-  users: User[];
+  users: AdminUser[];
   pageNum: number;
   pageSize: number;
   total: number;

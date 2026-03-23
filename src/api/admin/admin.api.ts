@@ -1,5 +1,5 @@
 import request from '@/request'
-import type { User, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/admin/user.type'
+import type { AdminUser, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/admin/user.type'
 
 export const getUserListApi = (params: {
   pageNum?: number
@@ -15,7 +15,7 @@ export const getUserListApi = (params: {
 /**
  * 获取单个用户
  */
-export const getUserApi = (id: string): Promise<User> => {
+export const getUserApi = (id: string): Promise<AdminUser> => {
   return request({
     url: `/api/v1/admin/users/${id}`,
     method: 'get',
@@ -25,7 +25,7 @@ export const getUserApi = (id: string): Promise<User> => {
 /**
  * 创建用户
  */
-export const createUserApi = (data: CreateUserRequest): Promise<User> => {
+export const createUserApi = (data: CreateUserRequest): Promise<AdminUser> => {
   return request({
     url: '/api/v1/admin/users',
     method: 'post',
@@ -41,7 +41,7 @@ export const createUserApi = (data: CreateUserRequest): Promise<User> => {
  * 更新用户
  */
 
-export const updateUserApi = (id: string, data: UpdateUserRequest): Promise<User> => {
+export const updateUserApi = (id: string, data: UpdateUserRequest): Promise<AdminUser> => {
   return request({
     url: `/api/v1/admin/users/${id}`,
     method: 'patch',
