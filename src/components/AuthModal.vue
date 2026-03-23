@@ -86,11 +86,6 @@
             </div>
           </div>
 
-          <!-- 错误提示 -->
-          <p v-if="errorMessage" class="text-sm text-red-500 text-center">
-            {{ errorMessage }}
-          </p>
-
           <!-- 提交按钮 -->
           <button
             type="submit"
@@ -121,6 +116,16 @@
       </div>
     </div>
   </Transition>
+
+  <!-- 使用 ResultModal 组件显示错误信息 -->
+  <ResultModal
+    v-if="errorMessage"
+    :visible="!!errorMessage"
+    type="error"
+    title="操作失败"
+    :message="errorMessage"
+    @close="errorMessage = ''"
+  />
 </template>
 
 <script setup lang="ts">
@@ -128,6 +133,7 @@ import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { storeToRefs } from 'pinia'
 import { PhX } from '@phosphor-icons/vue'
+import ResultModal from '@/components/ResultModal.vue'
 
 const authStore = useAuthStore()
 const { isAuthOpen, authMode } = storeToRefs(authStore)

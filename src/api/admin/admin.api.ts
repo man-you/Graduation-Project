@@ -1,5 +1,5 @@
 import request from '@/request'
-import type { AdminUser, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/admin/user.type'
+import type { AdminUser, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/admin/adminUser.type'
 
 export const getUserListApi = (params: {
   pageNum?: number
@@ -27,7 +27,7 @@ export const getUserApi = (id: string): Promise<AdminUser> => {
  */
 export const createUserApi = (data: CreateUserRequest): Promise<AdminUser> => {
   return request({
-    url: '/api/v1/admin/users',
+    url: '/api/v1/admin/user',
     method: 'post',
     data,
   })

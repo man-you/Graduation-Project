@@ -21,7 +21,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { routerBack } from '@/util/routerUtil'
 import { PhArrowLeft } from '@phosphor-icons/vue'
 import Chat from '@/views/public/Chat.vue'

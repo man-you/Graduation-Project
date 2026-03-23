@@ -16,7 +16,7 @@ export const adminChildrenRoutes: RouteRecordRaw[] = [
   {
     path: 'settings',
     name: 'AdminSettings',
-    component: () => import('@/views/setting/Setting.vue'),
+    component: () => import('@/views/setting/UserSetting.vue'),
     meta: { roles: ['admin'] },
   },
 ]

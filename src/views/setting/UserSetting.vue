@@ -19,7 +19,7 @@
                 "
               ></div>
 
-              <div class="absolute -bottom-10 left-8">
+              <div class="absolute -bottom-8 left-8">
                 <div class="relative group">
                   <div
                     class="absolute -inset-1 rounded-[2rem] bg-blue-200/30 dark:bg-blue-500/10 blur transition group-hover:opacity-100"
@@ -38,14 +38,14 @@
               </div>
             </div>
 
-            <div class="px-8 pt-14 pb-8">
+            <div class="px-8 pt-10 pb-6">
               <div>
                 <h3
                   class="text-2xl font-bold text-slate-800 dark:text-white tracking-tight leading-none"
                 >
                   {{ form.userName || '求知者' }}
                 </h3>
-                <div class="mt-3">
+                <div class="mt-3 flex flex-wrap gap-2">
                   <span
                     :class="[
                       'inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase',
@@ -54,16 +54,24 @@
                         : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
                     ]"
                   >
-                    {{ form.role === 'teacher' ? '教师' : '学生' }}
+                    {{
+                      form.role === 'teacher' ? '教师' : form.role === 'admin' ? '管理员' : '学生'
+                    }}
+                  </span>
+                  <span
+                    v-if="form.identifier"
+                    class="inline-flex items-center rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase bg-slate-100 dark:bg-slate-800 text-slate-500"
+                  >
+                    学号: {{ form.identifier }}
                   </span>
                 </div>
               </div>
 
               <div class="my-8 border-t border-dashed border-slate-100 dark:border-slate-800"></div>
 
-              <div class="space-y-6">
+              <div class="space-y-5">
                 <div
-                  v-for="(val, label, idx) in { email: '电子邮箱', phoneNumber: '联系电话' }"
+                  v-for="(val, label, idx) in contactFields"
                   :key="idx"
                   class="flex items-center gap-4 group"
                 >
@@ -83,14 +91,48 @@
                     <p
                       class="truncate text-sm font-semibold text-slate-600 dark:text-slate-300 mt-0.5"
                     >
-                      {{
-                        form[label as keyof typeof form] ||
-                        (label === 'phoneNumber' ? '未绑定' : '-')
-                      }}
+                      {{ form[label] || (label === 'phoneNumber' ? '未绑定' : '-') }}
                     </p>
                   </div>
                 </div>
-                <div class="flex items-start gap-4 group">
+
+                <div v-if="form.department" class="flex items-center gap-4 group">
+                  <div
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50/50 dark:bg-slate-800 text-blue-500 transition-colors group-hover:bg-blue-500 group-hover:text-white"
+                  >
+                    <PhBank size="20" weight="duotone" />
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      学院 / 部门
+                    </p>
+                    <p
+                      class="truncate text-sm font-semibold text-slate-600 dark:text-slate-300 mt-0.5"
+                    >
+                      {{ form.department }}
+                    </p>
+                  </div>
+                </div>
+
+                <div v-if="form.grade" class="flex items-center gap-4 group">
+                  <div
+                    class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50/50 dark:bg-slate-800 text-blue-500 transition-colors group-hover:bg-blue-500 group-hover:text-white"
+                  >
+                    <PhGraduationCap size="20" weight="duotone" />
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                      当前年级
+                    </p>
+                    <p
+                      class="truncate text-sm font-semibold text-slate-600 dark:text-slate-300 mt-0.5"
+                    >
+                      {{ form.grade }}级
+                    </p>
+                  </div>
+                </div>
+
+                <div v-if="form.bio" class="flex items-start gap-4 group">
                   <div
                     class="mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-blue-50/50 dark:bg-slate-800 text-blue-500 transition-colors group-hover:bg-blue-500 group-hover:text-white"
                   >
@@ -101,6 +143,7 @@
                       个人简介
                     </p>
                     <p
+                      v-if="form.role !== 'admin'"
                       class="text-sm italic leading-relaxed text-slate-500 dark:text-slate-400 mt-1"
                     >
                       {{ form.bio || '在这个知识的海洋里，勇敢航行。' }}
@@ -178,7 +221,9 @@
                   <div class="space-y-1.5">
                     <label class="form-label-edu">用户角色</label>
                     <input
-                      :value="form.role === 'teacher' ? '教师' : '学生'"
+                      :value="
+                        form.role === 'teacher' ? '教师' : form.role === 'admin' ? '管理员' : '学生'
+                      "
                       readonly
                       class="form-input-edu-readonly"
                     />
@@ -285,13 +330,30 @@ import {
   PhPhone,
   PhNotebook,
   PhCloudArrowUp,
+  PhBank,
+  PhGraduationCap,
 } from '@phosphor-icons/vue'
 
 const authStore = useAuthStore()
 const activeTab = ref<'profile' | 'security'>('profile')
 const saving = ref(false)
 
-const form = reactive({ userName: '', email: '', phoneNumber: '', bio: '', role: '' })
+const contactFields = {
+  email: '电子邮箱',
+  phoneNumber: '联系电话',
+} as const
+
+const form = reactive({
+  userName: '',
+  email: '',
+  phoneNumber: '',
+  bio: '',
+  role: '',
+  realName: '',
+  identifier: '',
+  department: '',
+  grade: '',
+})
 const securityForm = reactive({
   email: '',
   currentPassword: '',
@@ -351,8 +413,9 @@ const updateProfile = async () => {
     authStore.setUserInfo(res)
     takeProfileSnapshot()
     showResultModal('success', '同步成功', '您的基本资料已更新。')
-  } catch (e: any) {
-    showResultModal('error', '操作失败', e?.message || '网络连接异常')
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    showResultModal('error', '操作失败', errorMessage || '网络连接异常')
   } finally {
     saving.value = false
   }
@@ -371,9 +434,10 @@ const updateSecuritySettings = async () => {
 
     Object.assign(securityForm, { currentPassword: '', newPassword: '', confirmNewPassword: '' })
     showResultModal('success', '安全加固成功', '您的密码已更新。')
-  } catch (e: any) {
-    console.log('更新错误', e, e.message)
-    showResultModal('error', '更新失败', e?.message || '请确认原始密码正确')
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.log('更新错误', error, errorMessage)
+    showResultModal('error', '更新失败', errorMessage || '请确认原始密码正确')
   } finally {
     saving.value = false
   }
@@ -393,7 +457,7 @@ const changeAvatar = () => {
   @apply w-full rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/50 px-4 py-2
          text-[14px] text-slate-700 dark:text-slate-200 outline-none transition-all duration-300
          placeholder:text-slate-300 dark:placeholder:text-slate-600
-         focus:border-blue-400 dark:focus:border-blue-500/50 focus:bg-white dark:focus:bg-slate-900 
+         focus:border-blue-400 dark:focus:border-blue-500/50 focus:bg-white dark:focus:bg-slate-900
          focus:ring-4 focus:ring-blue-100/10 dark:focus:ring-blue-900/10;
 }
 
@@ -404,7 +468,7 @@ const changeAvatar = () => {
 
 .btn-edu-primary {
   @apply flex items-center justify-center px-8 rounded-xl bg-blue-500 text-white font-bold text-sm
-         shadow-lg shadow-blue-100 dark:shadow-none transition-all duration-300 hover:bg-blue-600 
+         shadow-lg shadow-blue-100 dark:shadow-none transition-all duration-300 hover:bg-blue-600
          hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-40 disabled:pointer-events-none;
 }
 

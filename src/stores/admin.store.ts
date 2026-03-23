@@ -1,17 +1,16 @@
 import { defineStore } from 'pinia'
-import type { User, PaginatedUsersResponse, CreateUserRequest, UpdateUserRequest } from '@/types/admin/user.type'
-import { 
-  getUserListApi, 
-  getUserApi, 
-  createUserApi, 
-  updateUserApi, 
-  deleteUserApi 
+import type { AdminUser,  CreateUserRequest, UpdateUserRequest } from '@/types/admin/adminUser.type'
+import {
+  getUserListApi,
+  createUserApi,
+  updateUserApi,
+  deleteUserApi
 } from '@/api/admin/admin.api'
 
 export const useAdminStore = defineStore('admin', {
   state: () => ({
     // 用户列表
-    users: [] as User[],
+    users: [] as AdminUser[],
     // 分页信息
     pagination: {
       pageNum: 1,
@@ -54,6 +53,7 @@ export const useAdminStore = defineStore('admin', {
      */
     async createUser(data: CreateUserRequest) {
       try {
+        console.log('createUserApi', data)
         const user = await createUserApi(data)
         // 刷新用户列表
         await this.getUserList(this.pagination.pageNum)

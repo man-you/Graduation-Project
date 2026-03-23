@@ -9,6 +9,7 @@ export interface AdminUser {
   userName: string;
   realName: string;
   identifier: string;
+  department: string;
   role: UserRole;
   phoneNumber: string;
   grade: string;
@@ -24,12 +25,13 @@ export interface PaginatedUsersResponse {
   total: number;
 }
 
-
 // 创建用户请求体
 export interface CreateUserRequest {
   userName?: string
   email: string
   identifier: string
+  department: string
+  grade: string
   phoneNumber: string
   password: string
   role?: UserRole
@@ -39,7 +41,22 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   userName?: string
   email?: string
+  identifier?: string
+  department?: string
+  grade?: string
   phoneNumber?: string
   password?: string
   role?: UserRole
+}
+
+// 表单数据类型（用于编辑/新增用户表单）
+export interface UserFormData {
+  userName: string
+  email: string
+  password: string
+  phoneNumber: string
+  grade: string
+  department: string
+  identifier: string
+  role: 'student' | 'teacher'
 }
