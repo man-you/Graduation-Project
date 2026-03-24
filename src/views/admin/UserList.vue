@@ -403,7 +403,6 @@
 </template>
 
 <script setup lang="ts">
-// ...(Script 部分逻辑保持不变)
 import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin.store'
 import { PhUsers, PhPlus, PhX, PhTrash } from '@phosphor-icons/vue'
@@ -486,8 +485,29 @@ const handleSubmit = async () => {
         if (key === 'email') continue
         const newVal = formData.value[key as keyof UserFormData]
         const oldVal = originalFormData.value[key as keyof Partial<UserFormData>]
-        if (key === 'password' && newVal !== '') payload.password = newVal
-        else if (newVal !== oldVal) (payload as any)[key] = newVal
+        
+        if (key === 'password') {
+          if (newVal !== '') {
+            payload.password = newVal
+          }
+          continue
+        }
+        
+        // 类型安全的字段更新
+        if (newVal !== oldVal) {
+          switch (key) {
+            case 'userName':
+            case 'phoneNumber':
+            case 'grade':
+            case 'department':
+            case 'identifier':
+              payload[key] = newVal
+              break
+            case 'role':
+              payload.role = newVal as 'student' | 'teacher'
+              break
+          }
+        }
       }
       if (Object.keys(payload).length === 0) {
         showModal.value = false
@@ -500,8 +520,9 @@ const handleSubmit = async () => {
       notify('success', '创建成功', '新用户已创建')
     }
     showModal.value = false
-  } catch (error: any) {
-    notify('error', '操作失败', error.message || '请重试')
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    notify('error', '操作失败', errorMessage || '请重试')
   } finally {
     loading.value = false
   }
@@ -519,23 +540,37 @@ const handleDelete = async () => {
     await adminStore.deleteUser(targetUser.value.id)
     showDeleteConfirm.value = false
     notify('success', '删除成功', '用户已移除')
-  } catch (error: any) {
-    notify('error', '删除失败', error.message || '请重试')
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    notify('error', '删除失败', errorMessage || '请重试')
   } finally {
     loading.value = false
   }
 }
 
 const resetPassword = async () => {
-  if (!targetUser.value || !formData.value.identifier) return
+  if (!targetUser.value) {
+    notify('error', '操作失败', '无法获取用户信息')
+    return
+  }
+  
+  if (!formData.value.identifier) {
+    notify('error', '重置失败', '请先填写学号')
+    return
+  }
+  
+  // 生成默认密码：学号 + "..."
   const defaultPassword = formData.value.identifier + '...'
+  
   loading.value = true
   try {
+    // 直接调用更新用户API来重置密码，确保类型安全
     await adminStore.updateUser(targetUser.value.id, { password: defaultPassword })
     notify('success', '重置成功', `密码已设为：${defaultPassword}`)
     showModal.value = false
-  } catch (error: any) {
-    notify('error', '重置失败', error.message)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    notify('error', '重置失败', errorMessage || '请重试')
   } finally {
     loading.value = false
   }
