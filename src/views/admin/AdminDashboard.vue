@@ -5,7 +5,7 @@
     <div class="max-w-5xl mx-auto">
       <div class="mb-12 border-l-4 border-blue-600 pl-6">
         <h1 class="text-3xl font-black text-blue-600 dark:text-blue-400 tracking-tight uppercase">
-          云链教育管理后台
+          知链教育管理后台
         </h1>
         <p class="text-slate-500 dark:text-slate-400 mt-2 font-medium">
           欢迎回来，系统管理员。请选择您需要操作的功能维度。
