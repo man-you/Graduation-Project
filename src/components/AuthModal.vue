@@ -29,6 +29,24 @@
           </p>
         </div>
 
+        <!-- 错误信息显示区域 -->
+        <div
+          v-if="errorMessage"
+          class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4"
+        >
+          <div class="flex items-center gap-2 text-red-600 dark:text-red-400 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            {{ errorMessage }}
+          </div>
+        </div>
+
         <!-- 表单 -->
         <form @submit.prevent="handleAuthSubmit" class="space-y-6">
           <!-- 邮箱 -->
@@ -86,11 +104,6 @@
             </div>
           </div>
 
-          <!-- 错误提示 -->
-          <p v-if="errorMessage" class="text-sm text-red-500 text-center">
-            {{ errorMessage }}
-          </p>
-
           <!-- 提交按钮 -->
           <button
             type="submit"
@@ -142,6 +155,7 @@ const errorMessage = ref('')
 // 关闭模态框
 const closeAuthModal = () => {
   authStore.closeAuth()
+  errorMessage.value = ''
 }
 
 // 切换登录 / 注册
@@ -187,15 +201,24 @@ const handleAuthSubmit = async () => {
     email.value = ''
     password.value = ''
     role.value = 'student'
-  } catch (error: any) {
+  } catch (error: unknown) {
     // 根据统一响应格式处理错误
-    const code = error.code || error.response?.status
+    let code: string | number | undefined
+    let message: string | undefined
+    
+    if (error instanceof Error) {
+      // 检查是否是自定义错误对象
+      const customError = error as { code?: string | number; response?: { status: number } }
+      code = customError.code || customError.response?.status
+      message = error.message
+    }
+    
     if (code === 409) {
       errorMessage.value = '该邮箱已被注册'
     } else if (code === 401) {
       errorMessage.value = '邮箱或密码错误'
     } else {
-      errorMessage.value = '操作失败，请稍后重试'
+      errorMessage.value = message || '操作失败，请稍后重试'
     }
   } finally {
     loading.value = false

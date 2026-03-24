@@ -10,8 +10,16 @@ export const ROLE_ROUTE_MAP = {
   teacher: async () => {
     const mod = await import('@/router/module/teacher.routes')
     return {
-      parentName: 'teacheLayout',
+      parentName: 'TeacherLayout',
       routes: mod.teacherChildrenRoutes,
+    }
+  },
+
+  admin: async () => {
+    const mod = await import('@/router/module/admin.routes')
+    return {
+      parentName: 'AdminLayout',
+      routes: mod.adminChildrenRoutes,
     }
   },
 }

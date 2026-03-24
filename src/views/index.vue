@@ -23,8 +23,8 @@
   </div>
 </template>
 
-<script setup>
-/* * 
+<script setup lang="ts">
+/* *
   根布局文件，包含导航栏、主内容区域、页脚，和认证模态框组件。
   */
 import Footer from '@/layouts/Footer.vue'

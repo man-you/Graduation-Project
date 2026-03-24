@@ -30,9 +30,25 @@ const constantRoutes = [
   {
     path: '/student',
     name: 'StudentLayout',
-    component: () => import('@/views/public/Home.vue'),
+    component: () => import('@/views/student/StudentHome.vue'),
     meta: { roles: ['student'] },
     redirect: '/student/courses',
+    children: [],
+  },
+    {
+    path: '/teacher',
+    name: 'TeacherLayout',
+    component: () => import('@/views/teacher/TeacherHome.vue'),
+    meta: { roles: ['teacher'] },
+    redirect: '/teacher/courses',
+    children: [],
+  },
+    {
+    path: '/admin',
+    name: 'AdminLayout',
+    component: () => import('@/views/admin/AdminHome.vue'),
+    meta: { roles: ['admin'] },
+    redirect: '/admin/users',
     children: [],
   },
   {

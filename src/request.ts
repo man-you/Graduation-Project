@@ -1,6 +1,11 @@
 import axios from 'axios'
 import { getToken } from './util/authUtil'
 
+// 定义带有 code 属性的错误对象接口
+interface ErrorWithCode extends Error {
+  code?: string | number
+}
+
 const request = axios.create({
   // 根据运行环境行设置不同的 baseURL
   baseURL: import.meta.env.VITE_BASE_API,
@@ -32,7 +37,10 @@ request.interceptors.response.use(
     } else {
       // 处理错误情况
       const error = new Error(res.message || '请求失败')
-      ;(error as any).code = res.code
+      ;(error as ErrorWithCode).code = res.code
+
+      console.log('请求错误:', error)
+
       return Promise.reject(error)
     }
   },
@@ -41,11 +49,11 @@ request.interceptors.response.use(
     if (error.response) {
       const res = error.response.data
       const err = new Error(res.message || '请求失败')
-      ;(err as any).code = res.code
+      ;(err as ErrorWithCode).code = res.code
       return Promise.reject(err)
     } else {
       const err = new Error('网络错误，请检查网络连接')
-      ;(err as any).code = 'NETWORK_ERROR'
+      ;(err as ErrorWithCode).code = 'NETWORK_ERROR'
       return Promise.reject(err)
     }
   },

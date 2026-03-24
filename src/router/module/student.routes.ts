@@ -16,7 +16,7 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
   {
     path: 'course/quiz/:nodeId',
     name: 'StudentCourseQuiz',
-    component: () => import('@/views/student/Quiz.vue'),
+    component: () => import('@/views/student/CourseQuiz.vue'),
     meta: { roles: ['student'] },
   },
   {
@@ -28,13 +28,13 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
   {
     path: 'course/summary/:nodeId',
     name: 'StudentSummary',
-    component: () => import('@/views/student/Summary.vue'),
+    component: () => import('@/views/student/CourseSummary.vue'),
     meta: { roles: ['student'] },
   },
   {
     path: 'course/graphs',
     name: 'StudentKnowledges',
-    component: () => import('@/views/public/Graph.vue'),
+    component: () => import('@/views/public/CourseGraph.vue'),
     meta: { roles: ['student'] },
   },
   {
@@ -46,13 +46,13 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
   {
     path: 'assistant',
     name: 'StudentChat',
-    component: () => import('@/views/public/Chat.vue'),
+    component: () => import('@/views/public/ChatAgent.vue'),
     meta: { roles: ['student'] },
   },
   {
     path: 'settings',
     name: 'StudentSettings',
-    component: () => import('@/views/setting/Setting.vue'),
+    component: () => import('@/views/setting/UserSetting.vue'),
     meta: { roles: ['student'] },
   },
 ]
