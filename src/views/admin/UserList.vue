@@ -322,7 +322,7 @@
       class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-[2px]"
     >
       <div
-        class="w-full max-sm bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 border border-slate-200 dark:border-slate-700"
+        class="w-full max-w-md bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 border border-slate-200 dark:border-slate-700"
       >
         <div class="flex items-center gap-4 mb-4">
           <div
@@ -485,14 +485,14 @@ const handleSubmit = async () => {
         if (key === 'email') continue
         const newVal = formData.value[key as keyof UserFormData]
         const oldVal = originalFormData.value[key as keyof Partial<UserFormData>]
-        
+
         if (key === 'password') {
           if (newVal !== '') {
             payload.password = newVal
           }
           continue
         }
-        
+
         // 类型安全的字段更新
         if (newVal !== oldVal) {
           switch (key) {
@@ -553,15 +553,15 @@ const resetPassword = async () => {
     notify('error', '操作失败', '无法获取用户信息')
     return
   }
-  
+
   if (!formData.value.identifier) {
     notify('error', '重置失败', '请先填写学号')
     return
   }
-  
+
   // 生成默认密码：学号 + "..."
   const defaultPassword = formData.value.identifier + '...'
-  
+
   loading.value = true
   try {
     // 直接调用更新用户API来重置密码，确保类型安全
