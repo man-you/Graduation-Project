@@ -4,7 +4,8 @@ import {
   getUserListApi,
   createUserApi,
   updateUserApi,
-  deleteUserApi
+  deleteUserApi,
+  searchUserApi
 } from '@/api/admin/admin.api'
 
 export const useAdminStore = defineStore('admin', {
@@ -96,11 +97,14 @@ export const useAdminStore = defineStore('admin', {
     /**
      * 搜索用户
      */
-    async searchUsers(query: string) {
-      this.searchQuery = query
-      // 这里可以根据实际API支持添加搜索功能
-      // 目前先刷新列表
-      await this.getUserList(1)
+    async searchUsers(keyword: string) {
+      try {
+        const res = await searchUserApi(keyword)
+        this.users = res.users
+        this.pagination.total = res.total
+      } catch (error) {
+        console.error('搜索用户失败:', error)
+      }
     }
   }
 })

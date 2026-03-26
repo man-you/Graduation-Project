@@ -24,9 +24,9 @@
           </span>
           <input
             v-model="searchQuery"
-            @input="handleSearch"
+            @keyup.enter="handleSearch"
             type="text"
-            placeholder="搜索用户邮箱或姓名"
+            placeholder="搜索用户邮箱或姓名,回车搜索"
             class="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 transition-all duration-200"
           />
         </div>
@@ -451,8 +451,9 @@ const notify = (type: 'success' | 'error', title: string, message: string) => {
 const handleSearch = () => {
   if (searchTimeout) clearTimeout(searchTimeout)
   searchTimeout = setTimeout(() => {
+    adminStore.pagination.pageNum = 1
     adminStore.searchUsers(searchQuery.value)
-  }, 300)
+  }, 500)
 }
 
 const openModal = (user?: AdminUser) => {

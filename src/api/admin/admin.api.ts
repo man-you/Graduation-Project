@@ -59,3 +59,18 @@ export const deleteUserApi = (id: string): Promise<void> => {
     method: 'delete',
   })
 }
+
+/**
+ * 搜索用户
+ */
+export const searchUserApi = (keyword: string, pageNum: number = 1, pageSize: number = 20):Promise<PaginatedUsersResponse> => {
+  return request({
+    url: '/api/v1/admin/search/users',
+    method: 'get',
+    params: {
+      keyword,
+      pageNum,
+      pageSize,
+    },
+  })
+}

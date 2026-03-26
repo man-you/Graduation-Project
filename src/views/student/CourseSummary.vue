@@ -16,7 +16,7 @@
 
     <!-- 复用Chat组件，传入分析模式和nodeId -->
     <div class="flex-1">
-      <Chat :mode="'summary'" :node-id="Number($route.params.nodeId)" />
+      <ChatAgent :mode="'summary'" :node-id="Number($route.params.nodeId)" />
     </div>
   </div>
 </template>
@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import { routerBack } from '@/util/routerUtil'
 import { PhArrowLeft } from '@phosphor-icons/vue'
-import ChatSummary from '@/views/public/ChatSummary.vue'
+import ChatAgent from '@/views/public/ChatAgent.vue'
 import { onBeforeUnmount } from 'vue'
 import { useChatStore } from '@/stores/chat.store'
 

@@ -40,7 +40,7 @@ const constantRoutes = [
     name: 'TeacherLayout',
     component: () => import('@/views/teacher/TeacherHome.vue'),
     meta: { roles: ['teacher'] },
-    redirect: '/teacher/courses',
+    redirect: '/teacher/files',
     children: [],
   },
     {
