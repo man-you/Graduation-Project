@@ -17,6 +17,7 @@
           @click="navToGraph"
         >
           {{ courseTitle }}
+
           <span class="inline-block ml-2 text-xs font-normal text-slate-400">
             点击查看知识图谱
           </span>
@@ -165,7 +166,7 @@
                 <PhPlay v-else :size="32" weight="fill" class="ml-1" />
               </div>
               <p class="text-slate-400 text-sm font-medium">
-                {{ videoState.loading ? '正在获取安全资源...' : '点击加载并播放视频' }}
+                {{ videoState.loading ? '正在获取安全资源...' : '点击播放视频教程' }}
               </p>
             </div>
           </div>
@@ -203,7 +204,7 @@
 
             <div v-if="!showPdfViewer" class="flex justify-center gap-4 mt-8">
               <button @click="showPdfViewer = true" class="action-btn">
-                <PhFilePdf :size="20" weight="fill" /> 查看讲义
+                <PhFilePdf :size="20" weight="fill" /> 课程讲义
               </button>
               <button @click="navToQuiz" class="action-btn">
                 <PhExam :size="20" weight="fill" /> 课后习题
@@ -233,11 +234,13 @@
           <button @click="navStep(-1)" :disabled="isFirst" class="nav-step-btn">
             <PhArrowFatLineLeft :size="18" class="mr-2" weight="fill" /> 上一节
           </button>
+
           <div
             class="flex flex-col items-center px-10 border-x border-white/10 font-mono font-black"
           >
             {{ currentStepIndex + 1 }} / {{ flatNodes.length }}
           </div>
+
           <button @click="navStep(1)" :disabled="isLast" class="nav-step-btn">
             下一节 <PhArrowFatLineRight :size="18" class="ml-2" weight="fill" />
           </button>
@@ -256,6 +259,7 @@ import { routerBack } from '@/util/routerUtil'
 import PDFViewer from '@/components/PDFViewer.vue'
 import { getNodeResourceApi } from '@/api/course/course.api'
 
+// --- 状态初始化 ---
 const route = useRoute()
 const router = useRouter()
 const courseStore = useCourseStore()
@@ -272,12 +276,17 @@ const videoState = reactive({
 })
 
 // --- 计算属性 ---
+
 const courseTitle = computed(() => courseData.value?.[0]?.nodeName || '课程详情')
+
 const formattedDuration = computed(() => {
   const seconds = courseData.value?.[0]?.estimatedDuration || 0
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
 })
 
+/**
+ * 平铺所有叶子节点 (Level 4)，单次循环优化性能
+ */
 const flatNodes = computed(() => {
   const nodes = []
   const l2List = courseData.value?.[0]?.childNodes || []
@@ -298,10 +307,38 @@ const progressPercent = computed(() => {
   const total = flatNodes.value.length
   return total ? Math.round((flatNodes.value.filter((n) => n.isCompleted).length / total) * 100) : 0
 })
+
 const isFirst = computed(() => currentStepIndex.value <= 0)
 const isLast = computed(() => currentStepIndex.value >= flatNodes.value.length - 1)
 
 // --- 逻辑处理 ---
+
+onMounted(async () => {
+  const courseId = Number(route.params.id)
+  if (!courseId) return router.push('/course')
+
+  try {
+    await courseStore.getCourseNodes(courseId)
+
+    // 路由定位逻辑
+    const queryNodeId = route.query.nodeId
+    let target = null
+
+    if (queryNodeId) {
+      target = flatNodes.value.find((n) => n.id.toString() === queryNodeId.toString())
+    }
+
+    if (!target && flatNodes.value.length > 0) {
+      target = flatNodes.value.find((n) => !n.isCompleted) || flatNodes.value[0]
+    }
+
+    if (target) handleNodeClick(target, target.parentNodeId)
+  } catch (error) {
+    console.error('Failed to init course:', error)
+  }
+})
+
+// 节点切换重置资源状态
 watch(
   () => currentNode.value?.id,
   () => {
@@ -311,36 +348,26 @@ watch(
   },
 )
 
-onMounted(async () => {
-  const courseId = Number(route.params.id)
-  if (!courseId) return router.push('/course')
-  try {
-    await courseStore.getCourseNodes(courseId)
-    const queryNodeId = route.query.nodeId
-    let target = queryNodeId
-      ? flatNodes.value.find((n) => n.id.toString() === queryNodeId.toString())
-      : null
-
-    if (!target && flatNodes.value.length > 0) {
-      target = flatNodes.value.find((n) => !n.isCompleted) || flatNodes.value[0]
-    }
-    if (target) handleNodeClick(target, target.parentNodeId)
-  } catch (error) {
-    console.error('Failed to init course:', error)
-  }
-})
-
 const isExpanded = (id) => expandedNodes.value.includes(id)
+
 const toggleExpand = (id) => {
   const idx = expandedNodes.value.indexOf(id)
   idx > -1 ? expandedNodes.value.splice(idx, 1) : expandedNodes.value.push(id)
 }
 
+/**
+ * 统一节点点击处理
+ */
 const handleNodeClick = (node, parentId) => {
   if (!node || currentNode.value?.id === node.id) return
+
   currentNode.value = node
   if (parentId && !isExpanded(parentId)) expandedNodes.value.push(parentId)
+
+  // 同步 URL
   router.replace({ query: { ...route.query, nodeId: node.id } })
+
+  // 滚动复位
   contentScrollRef.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -348,7 +375,6 @@ const loadVideoResource = async () => {
   if (!currentNode.value || videoState.url || videoState.loading) return
   videoState.loading = true
   try {
-    // 获取带签名的临时安全 URL
     const url = await getNodeResourceApi(currentNode.value.id, 'VIDEO')
     if (url) videoState.url = url
   } catch (error) {
