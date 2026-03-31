@@ -41,11 +41,14 @@ export const getCourseKnowledgeGraphApi = (courseId: number): Promise<CourseNode
  * 获取单个节点的资源签名地址
  * 场景：当图谱中的签名过期，或在详情页点击单个资源时触发
  */
-export const getNodeResourceApi = (nodeId: number): Promise<{ signedUrl: string }> => {
+export const getNodeResourceApi = (nodeId: number, resourceType?: 'PPT' | 'VIDEO' | 'PDF'): Promise<{ signedUrl: string }> => {
   return request({
     url: '/api/v1/tencent-cos/signed-url',
     method: 'get',
-    params: { nodeId }
+    params: { 
+      nodeId,
+      ...(resourceType ? { resourceType } : {})
+    }
   })
 }
 

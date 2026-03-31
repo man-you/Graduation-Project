@@ -14,7 +14,7 @@
         </button>
         <h1
           class="text-xl font-extrabold tracking-tight text-blue-600 leading-tight mb-4 cursor-pointer"
-          @click="showCourseGraph"
+          @click="navToGraph"
         >
           {{ courseTitle }}
           <span class="inline-block ml-2 text-xs font-normal text-slate-400">
@@ -26,7 +26,7 @@
           <div
             class="flex items-center bg-slate-100 text-slate-500 px-2.5 py-1 rounded-md text-[13px] font-bold"
           >
-            <PhClock :size="13" class="mr-1.5" /> {{ totalDuration }}
+            <PhClock :size="13" class="mr-1.5" /> {{ formattedDuration }}
           </div>
           <div
             class="flex items-center bg-blue-50 text-blue-600 px-2.5 py-1 rounded-md text-[13px] font-bold"
@@ -47,7 +47,7 @@
               @click="toggleExpand(lvl3.id)"
               :class="[
                 'flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all group',
-                expandedNodes.includes(lvl3.id) ? 'bg-slate-50' : 'hover:bg-slate-50/50',
+                isExpanded(lvl3.id) ? 'bg-slate-50' : 'hover:bg-slate-50/50',
               ]"
             >
               <div class="flex items-center min-w-0">
@@ -56,7 +56,7 @@
                   weight="bold"
                   :class="[
                     'mr-3 transition-transform text-slate-300',
-                    { 'rotate-90 text-blue-600': expandedNodes.includes(lvl3.id) },
+                    { 'rotate-90 text-blue-600': isExpanded(lvl3.id) },
                   ]"
                 />
                 <span
@@ -69,7 +69,7 @@
 
             <transition name="list">
               <ul
-                v-show="expandedNodes.includes(lvl3.id)"
+                v-show="isExpanded(lvl3.id)"
                 class="ml-[23px] mt-1 space-y-1 border-l-2 border-slate-100"
               >
                 <li
@@ -135,33 +135,38 @@
     <main class="flex-1 relative flex flex-col h-full overflow-hidden bg-slate-50">
       <div
         v-if="currentNode"
-        class="flex-1 overflow-y-auto p-5 lg:p-12 scroll-smooth"
         ref="contentScrollRef"
+        class="flex-1 overflow-y-auto p-5 lg:p-12 scroll-smooth"
       >
         <div class="max-w-4xl mx-auto w-full space-y-8 pb-32">
-          <!-- 视频播放区域 -->
           <div
             class="bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden aspect-video relative group border border-slate-800 shadow-blue-900/10"
           >
-            <!-- 实际视频播放器 -->
             <video
-              v-if="videoUrl"
-              :src="videoUrl"
+              v-if="videoState.url"
+              :src="videoState.url"
               class="w-full h-full object-cover"
               controls
-              @loadedmetadata="onVideoLoaded"
+              autoplay
             ></video>
 
-            <!-- 视频占位区域（当没有视频URL时显示） -->
-            <div v-else class="w-full h-full relative">
-              <div class="absolute inset-0 flex flex-col items-center justify-center text-white">
+            <div
+              v-else
+              class="w-full h-full flex flex-col items-center justify-center text-white bg-slate-800/50"
+            >
+              <div
+                @click="loadVideoResource"
+                class="w-20 h-20 rounded-full bg-blue-600 shadow-xl shadow-blue-600/30 flex items-center justify-center mb-4 hover:scale-110 transition-transform cursor-pointer active:scale-95"
+              >
                 <div
-                  @click="loadAndPlayVideo"
-                  class="w-20 h-20 rounded-full bg-blue-600 shadow-xl shadow-blue-600/30 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform cursor-pointer"
-                >
-                  <PhPlay :size="32" weight="fill" class="ml-1" />
-                </div>
+                  v-if="videoState.loading"
+                  class="w-8 h-8 border-4 border-white/30 border-t-white rounded-full animate-spin"
+                ></div>
+                <PhPlay v-else :size="32" weight="fill" class="ml-1" />
               </div>
+              <p class="text-slate-400 text-sm font-medium">
+                {{ videoState.loading ? '正在获取安全资源...' : '点击加载并播放视频' }}
+              </p>
             </div>
           </div>
 
@@ -189,40 +194,30 @@
                 class="bg-slate-50 p-7 rounded-2xl border border-slate-100 mb-10 flex items-start"
               >
                 <PhInfo :size="22" class="text-blue-500 mr-4 mt-1 flex-shrink-0" weight="fill" />
-                <div class="text-[15px] text-slate-600 leading-relaxed m-0">
+                <div class="text-[15px] text-slate-600 leading-relaxed">
                   <strong class="text-slate-900 block mb-1">本节目标</strong>
                   {{ currentNode.description || '掌握核心概念并完成本小节的知识内化。' }}
                 </div>
               </div>
             </article>
 
-            <!-- 集中操作按钮区域 -->
             <div v-if="!showPdfViewer" class="flex justify-center gap-4 mt-8">
-              <button
-                @click="showPdfViewer = true"
-                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
-              >
-                <PhFilePdf :size="20" weight="fill" />
-                课程讲义
+              <button @click="showPdfViewer = true" class="action-btn">
+                <PhFilePdf :size="20" weight="fill" /> 查看讲义
               </button>
-              <button
-                @click="loadQuiz"
-                class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-colors duration-300 flex items-center gap-2 shadow-md hover:shadow-lg"
-              >
-                <PhExam :size="20" weight="fill" />
-                课后习题
+              <button @click="navToQuiz" class="action-btn">
+                <PhExam :size="20" weight="fill" /> 课后习题
               </button>
             </div>
           </div>
 
-          <!-- PDFViewer 显示区域 -->
           <div
             v-if="showPdfViewer"
             class="bg-white rounded-[2rem] shadow-sm border border-slate-200 p-8 lg:p-14 relative"
           >
             <button
               @click="showPdfViewer = false"
-              class="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 rounded-full transition-colors duration-200 z-10"
+              class="absolute top-4 right-4 p-2 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full transition-colors z-10"
             >
               <PhX :size="20" weight="bold" />
             </button>
@@ -235,23 +230,15 @@
         <div
           class="max-w-lg mx-auto bg-slate-900/95 backdrop-blur-xl text-white rounded-3xl p-2 shadow-2xl flex items-center justify-between border border-white/10 pointer-events-auto"
         >
-          <button
-            @click="goPrev"
-            :disabled="isFirst"
-            class="flex items-center text-[14px] font-bold text-slate-400 hover:text-white disabled:opacity-20 p-4 rounded-2xl transition-all"
-          >
+          <button @click="navStep(-1)" :disabled="isFirst" class="nav-step-btn">
             <PhArrowFatLineLeft :size="18" class="mr-2" weight="fill" /> 上一节
           </button>
-          <div class="flex flex-col items-center px-10 border-x border-white/10">
-            <span class="text-[14px] font-black font-mono tracking-wider">
-              {{ currentStepIndex + 1 }} / {{ flatNodes.length }}
-            </span>
-          </div>
-          <button
-            @click="goNext"
-            :disabled="isLast"
-            class="flex items-center text-[14px] font-bold text-slate-400 hover:text-white disabled:opacity-20 p-4 rounded-2xl transition-all"
+          <div
+            class="flex flex-col items-center px-10 border-x border-white/10 font-mono font-black"
           >
+            {{ currentStepIndex + 1 }} / {{ flatNodes.length }}
+          </div>
+          <button @click="navStep(1)" :disabled="isLast" class="nav-step-btn">
             下一节 <PhArrowFatLineRight :size="18" class="ml-2" weight="fill" />
           </button>
         </div>
@@ -261,7 +248,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
@@ -272,197 +259,119 @@ import { getNodeResourceApi } from '@/api/course/course.api'
 const route = useRoute()
 const router = useRouter()
 const courseStore = useCourseStore()
+const { CourseNodes: courseData } = storeToRefs(courseStore)
 
-// --- Store 数据绑定 ---
-const { CourseNodes: courseData, courseList } = storeToRefs(courseStore)
-
-// --- 响应式状态 ---
-const expandedNodes = ref([]) // 记录展开的 LEVEL3 节点 ID
-const currentNode = ref(null) // 当前选中的 LEVEL4 节点
+const expandedNodes = ref([])
+const currentNode = ref(null)
 const contentScrollRef = ref(null)
-const showPdfViewer = ref(false) // 控制 PDFViewer 的显示状态
-const videoUrl = ref('') // 存储当前视频的URL
-const videoLoading = ref(false) // 视频加载状态
+const showPdfViewer = ref(false)
 
-// --- 计算属性 ---
-
-// 课程标题优先从 API 返回的树结构中取，否则取元数据
-const courseTitle = computed(() => {
-  return courseData.value?.[0]?.nodeName || '课程详情'
+const videoState = reactive({
+  url: '',
+  loading: false,
 })
 
-// 计算格式化时长
-const totalDuration = computed(() => {
+// --- 计算属性 ---
+const courseTitle = computed(() => courseData.value?.[0]?.nodeName || '课程详情')
+const formattedDuration = computed(() => {
   const seconds = courseData.value?.[0]?.estimatedDuration || 0
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
 })
 
-//平铺所有可学习节点 (Level 4)，用于上一节/下一节导航
 const flatNodes = computed(() => {
-  const list = []
-  courseData.value?.[0]?.childNodes?.forEach((l2) => {
-    l2.childNodes?.forEach((l3) => {
-      l3.childNodes?.forEach((l4) => {
-        list.push({ ...l4, parentNodeId: l3.id })
-      })
-    })
-  })
-  return list
+  const nodes = []
+  const l2List = courseData.value?.[0]?.childNodes || []
+  for (const l2 of l2List) {
+    for (const l3 of l2.childNodes || []) {
+      for (const l4 of l3.childNodes || []) {
+        nodes.push({ ...l4, parentNodeId: l3.id })
+      }
+    }
+  }
+  return nodes
 })
 
-// 当前节点在列表中的索引
-const currentStepIndex = computed(() => {
-  return flatNodes.value.findIndex((n) => n.id === currentNode.value?.id)
-})
-
-// 计算学习进度百分比
+const currentStepIndex = computed(() =>
+  flatNodes.value.findIndex((n) => n.id === currentNode.value?.id),
+)
 const progressPercent = computed(() => {
   const total = flatNodes.value.length
-  if (total === 0) return 0
-  const completed = flatNodes.value.filter((n) => n.isCompleted).length
-  return Math.round((completed / total) * 100)
+  return total ? Math.round((flatNodes.value.filter((n) => n.isCompleted).length / total) * 100) : 0
 })
-
 const isFirst = computed(() => currentStepIndex.value <= 0)
 const isLast = computed(() => currentStepIndex.value >= flatNodes.value.length - 1)
 
-// --- 生命周期与逻辑处理 ---
+// --- 逻辑处理 ---
+watch(
+  () => currentNode.value?.id,
+  () => {
+    videoState.url = ''
+    videoState.loading = false
+    showPdfViewer.value = false
+  },
+)
 
 onMounted(async () => {
   const courseId = Number(route.params.id)
   if (!courseId) return router.push('/course')
-
   try {
-    // 利用 course store 的缓存机制获取课程数据
-    // getCourseNodes 方法会自动检查缓存，避免重复请求
     await courseStore.getCourseNodes(courseId)
+    const queryNodeId = route.query.nodeId
+    let target = queryNodeId
+      ? flatNodes.value.find((n) => n.id.toString() === queryNodeId.toString())
+      : null
 
-    // 从 URL query 参数中获取 nodeId
-    const nodeId = route.query.nodeId
-
-    // 如果 URL 中有 nodeId 且该节点存在，则定位到该节点
-    if (nodeId && flatNodes.value.length > 0) {
-      const targetNode = flatNodes.value.find((n) => n.id.toString() === nodeId.toString())
-      if (targetNode) {
-        handleNodeClick(targetNode, targetNode.parentNodeId)
-        return
-      }
+    if (!target && flatNodes.value.length > 0) {
+      target = flatNodes.value.find((n) => !n.isCompleted) || flatNodes.value[0]
     }
-
-    // 默认行为：定位到第一个未完成章节，若都完成则选第一章
-    if (flatNodes.value.length > 0) {
-      const target = flatNodes.value.find((n) => !n.isCompleted) || flatNodes.value[0]
-      handleNodeClick(target, target.parentNodeId)
-    }
+    if (target) handleNodeClick(target, target.parentNodeId)
   } catch (error) {
-    console.error('初始化课程数据失败:', error)
+    console.error('Failed to init course:', error)
   }
 })
 
-// 监听当前节点变化，重置视频URL
-watch(currentNode, (newNode, oldNode) => {
-  if (newNode && newNode.id !== oldNode?.id) {
-    videoUrl.value = ''
-    videoLoading.value = false
-  }
-})
-
-// 目录展开/收起切换
+const isExpanded = (id) => expandedNodes.value.includes(id)
 const toggleExpand = (id) => {
   const idx = expandedNodes.value.indexOf(id)
-  if (idx > -1) expandedNodes.value.splice(idx, 1)
-  else expandedNodes.value.push(id)
+  idx > -1 ? expandedNodes.value.splice(idx, 1) : expandedNodes.value.push(id)
 }
 
-/**
- * 处理节点切换逻辑
- * @param node 选中的 LEVEL4 节点
- * @param parentId 父级 LEVEL3 节点 ID（用于自动展开）
- */
 const handleNodeClick = (node, parentId) => {
   if (!node || currentNode.value?.id === node.id) return
-
   currentNode.value = node
-
-  // 确保父目录处于展开状态
-  if (parentId && !expandedNodes.value.includes(parentId)) {
-    expandedNodes.value.push(parentId)
-  }
-
-  // 更新 URL query 参数，使用 nodeId
-  if (route.query.nodeId !== node.id.toString()) {
-    router.replace({
-      query: { ...route.query, nodeId: node.id },
-    })
-  }
-
-  // 页面滚动重置
+  if (parentId && !isExpanded(parentId)) expandedNodes.value.push(parentId)
+  router.replace({ query: { ...route.query, nodeId: node.id } })
   contentScrollRef.value?.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// 加载并播放视频
-const loadAndPlayVideo = async () => {
-  if (!currentNode.value || videoUrl.value || videoLoading.value) return
-
-  videoLoading.value = true
-
+const loadVideoResource = async () => {
+  if (!currentNode.value || videoState.url || videoState.loading) return
+  videoState.loading = true
   try {
-    // 调用API获取视频资源签名URL
-    const response = await getNodeResourceApi(currentNode.value.id)
-
-    // 根据需求，视频URL是返回数组中索引为1的元素
-    // 但根据API定义，getNodeResourceApi返回的是{ signedUrl: string }
-    // 如果后端实际返回的是数组，我们需要调整这里
-    if (response && typeof response === 'object') {
-      // 如果返回的是包含signedUrl的对象
-      if (response.signedUrl) {
-        videoUrl.value = response.signedUrl
-      }
-      // 如果返回的是数组（根据用户描述）
-      else if (Array.isArray(response) && response.length > 1) {
-        videoUrl.value = response[1]
-      }
-    }
+    // 获取带签名的临时安全 URL
+    const url = await getNodeResourceApi(currentNode.value.id, 'VIDEO')
+    if (url) videoState.url = url
   } catch (error) {
-    console.error('获取视频资源失败:', error)
-    // 可以在这里显示错误提示
+    console.error('Video resource error:', error)
   } finally {
-    videoLoading.value = false
+    videoState.loading = false
   }
 }
 
-// 视频加载完成回调
-const onVideoLoaded = () => {
-  // 视频元数据加载完成后可以执行的操作
-  console.log('视频加载完成')
+const navStep = (direction) => {
+  const nextNode = flatNodes.value[currentStepIndex.value + direction]
+  if (nextNode) handleNodeClick(nextNode, nextNode.parentNodeId)
 }
 
-const goNext = () => {
-  if (!isLast.value) {
-    const next = flatNodes.value[currentStepIndex.value + 1]
-    handleNodeClick(next, next.parentNodeId)
-  }
+const navToGraph = () => {
+  router.push({ name: 'StudentKnowledges', params: { id: courseData.value?.[0]?.id } })
 }
 
-const goPrev = () => {
-  if (!isFirst.value) {
-    const prev = flatNodes.value[currentStepIndex.value - 1]
-    handleNodeClick(prev, prev.parentNodeId)
-  }
+const navToQuiz = () => {
+  router.push({ name: 'StudentCourseQuiz', params: { nodeId: currentNode.value?.id } })
 }
 
 const goBack = () => routerBack()
-const showCourseGraph = () => {
-  const courseId = courseData.value?.[0]?.id
-  router.push({
-    name: 'StudentKnowledges',
-    params: { id: courseId },
-  })
-}
-
-const loadQuiz = () => {
-  router.push({ name: 'StudentCourseQuiz', params: { nodeId: currentNode.value?.id } })
-}
 </script>
 
 <style scoped>
@@ -475,6 +384,14 @@ const loadQuiz = () => {
 }
 .custom-scrollbar:hover::-webkit-scrollbar-thumb {
   background: #e2e8f0;
+}
+
+.action-btn {
+  @apply px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-md hover:shadow-lg active:scale-95;
+}
+
+.nav-step-btn {
+  @apply flex items-center text-[14px] font-bold text-slate-400 hover:text-white disabled:opacity-20 p-4 rounded-2xl transition-all;
 }
 
 .list-enter-active,

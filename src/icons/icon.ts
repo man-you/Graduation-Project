@@ -51,6 +51,8 @@ import {
   PhSteps,
   PhPencilSimple,
   PhCaretDown,
+  PhGear,
+  PhMagnifyingGlass,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
@@ -106,5 +108,8 @@ export const icons = {
   PhTrash,
   PhArrowRight,
   PhGhost,
+  PhGear,
+  PhMagnifyingGlass,
+
 
 }

@@ -19,7 +19,7 @@
             class="text-slate-500 dark:text-slate-400 text-lg md:text-xl font-medium leading-relaxed tracking-tight px-1"
           >
             {{
-              userRole === 'teacher'
+              isTeacher
                 ? '管理您的课程，构建系统化的教学内容。'
                 : '构建系统化知识图谱，通过量化进度开启深度学习之旅。'
             }}
@@ -41,8 +41,8 @@
           </div>
 
           <button
-            v-if="userRole === 'teacher'"
-            @click="createNewCourse"
+            v-if="isTeacher"
+            @click="navToCreate"
             class="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-3.5 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-2xl font-bold text-sm transition-all shadow-lg shadow-blue-700/10 active:scale-95"
           >
             <PhPlusCircle weight="bold" :size="20" />
@@ -51,13 +51,11 @@
         </div>
       </div>
 
-      <!-- 加载状态 -->
       <div v-if="isLoading" class="flex flex-col items-center justify-center py-48">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         <p class="mt-4 text-lg font-medium text-slate-600 dark:text-slate-400">加载中...</p>
       </div>
 
-      <!-- 有数据时显示课程列表 -->
       <div v-else-if="filteredCourses.length > 0">
         <TransitionGroup
           name="course-grid"
@@ -87,7 +85,7 @@
                     {{ course.title }}
                   </h3>
                   <div
-                    v-if="userRole !== 'teacher' && course.isCompleted"
+                    v-if="!isTeacher && course.isCompleted"
                     class="mt-2 inline-block px-3.5 py-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg text-[11px] font-black tracking-widest uppercase border border-emerald-100 dark:border-emerald-500/20"
                   >
                     已完成
@@ -96,7 +94,7 @@
               </div>
 
               <p
-                class="text-slate-500 text-dark:text-slate-400 text-base leading-relaxed mb-8 line-clamp-3 font-medium"
+                class="text-slate-500 dark:text-slate-400 text-base leading-relaxed mb-8 line-clamp-3 font-medium"
               >
                 {{ course.description }}
               </p>
@@ -114,7 +112,7 @@
             <div
               class="px-8 pt-6 pb-8 bg-slate-50/50 dark:bg-slate-800/30 border-t border-slate-100 dark:border-slate-800"
             >
-              <template v-if="userRole !== 'teacher'">
+              <template v-if="!isTeacher">
                 <div class="flex items-center justify-between mb-4">
                   <span class="text-[11px] font-black text-slate-400 uppercase tracking-widest"
                     >学习进度</span
@@ -132,7 +130,7 @@
                   ></div>
                 </div>
                 <button
-                  @click="loadCourse(course.id)"
+                  @click="navToCourse(course.id)"
                   class="w-full py-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-2xl text-sm font-bold transition-all flex items-center justify-center gap-2 active:scale-95"
                 >
                   <span>{{ course.progress === 100 ? '复习课程' : '继续学习' }}</span>
@@ -150,7 +148,7 @@
                     <span>删除</span>
                   </button>
                   <button
-                    @click="manageCourse(course.id)"
+                    @click="navToCourse(course.id)"
                     class="flex items-center justify-center gap-2 py-4 bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-2xl text-sm font-bold transition-all shadow-md active:scale-95"
                   >
                     <PhGear size="18" />
@@ -163,7 +161,6 @@
         </TransitionGroup>
       </div>
 
-      <!-- 无数据时显示空状态 -->
       <div
         v-else
         class="flex flex-col items-center justify-center py-48 bg-white dark:bg-slate-900/20 rounded-[3rem] border-2 border-dashed border-slate-200 dark:border-slate-800"
@@ -176,46 +173,29 @@
 
     <ResultModal
       v-if="modalState.visible"
-      :visible="modalState.visible"
-      :type="modalState.type"
-      :title="modalState.title"
-      :message="modalState.message"
-      :button-text="modalState.buttonText"
+      v-bind="modalState"
       @confirm="handleModalConfirm"
-      @close="handleModalClose"
+      @close="modalState.visible = false"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import {
-  PhGraph,
-  PhPlusCircle,
-  PhGraduationCap,
-  PhClock,
-  PhArrowRight,
-  PhTrash,
-  PhGear,
-  PhMagnifyingGlass,
-  PhGhost,
-} from '@phosphor-icons/vue'
+import { ref, computed, onMounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { useAuthStore } from '@/stores/auth.store'
 import ResultModal from '@/components/ResultModal.vue'
 import type { Course } from '@/types/course/course.type'
 
-const route = useRoute()
+// --- 基础状态 ---
 const router = useRouter()
 const courseStore = useCourseStore()
 const authStore = useAuthStore()
 
 const searchQuery = ref('')
-const userRole = computed(() => authStore.userRole)
 const deleteTargetCourse = ref<Course | null>(null)
-
-const modalState = ref({
+const modalState = reactive({
   visible: false,
   type: 'success' as 'success' | 'error',
   title: '',
@@ -223,10 +203,9 @@ const modalState = ref({
   buttonText: '',
 })
 
-onMounted(() => {
-  // 组件挂载时强制刷新课程列表，确保获取最新数据
-  courseStore.getCourseList(true)
-})
+// --- 计算属性 ---
+const isLoading = computed(() => courseStore.loading)
+const isTeacher = computed(() => authStore.userRole === 'teacher')
 
 const filteredCourses = computed(() => {
   const query = searchQuery.value.toLowerCase().trim()
@@ -235,68 +214,64 @@ const filteredCourses = computed(() => {
   )
 })
 
-// 添加加载状态计算属性
-const isLoading = computed(() => courseStore.loading)
+// --- 生命周期 ---
+onMounted(() => {
+  courseStore.getCourseList(true)
+})
 
-const loadCourse = (id: number) => {
+// --- 导航方法 ---
+const navToCourse = (id: number) => {
   router.push(
-    userRole.value === 'teacher'
+    isTeacher.value
       ? { name: 'TeacherNodeManage', params: { courseId: id } }
       : { name: 'StudentCourseDetail', params: { id } },
   )
 }
 
-const manageCourse = (id: number) =>
-  router.push({ name: 'TeacherNodeManage', params: { courseId: id } })
-
-const createNewCourse = () =>
+const navToCreate = () => {
   router.push({
     name: 'TeacherNodeCreate',
     params: { courseId: 0 },
     query: { level: 'LEVEL1', from: 'courseList' },
   })
+}
 
+// --- 业务方法 ---
 const confirmDeleteCourse = (course: Course) => {
   deleteTargetCourse.value = course
-  modalState.value = {
+  Object.assign(modalState, {
     visible: true,
     type: 'error',
     title: '确认删除',
     message: `您确定要永久删除《${course.title}》吗？`,
     buttonText: '确认删除',
-  }
+  })
 }
 
-const executeDeleteCourse = async () => {
-  if (!deleteTargetCourse.value) return
-  try {
-    await courseStore.deleteCourse(deleteTargetCourse.value.id)
-    modalState.value = {
-      visible: true,
-      type: 'success',
-      title: '删除成功',
-      message: '课程已移除',
-      buttonText: '确定',
-    }
-    deleteTargetCourse.value = null
-  } catch (e) {
-    modalState.value = {
-      visible: true,
-      type: 'error',
-      title: '删除失败',
-      message: '请稍后重试',
-      buttonText: '重试',
-    }
-  }
-}
-
-const handleModalClose = () => (modalState.value.visible = false)
-
-const handleModalConfirm = () => {
+const handleModalConfirm = async () => {
+  // 如果当前处于“确认删除”状态（即有待删除目标）
   if (deleteTargetCourse.value) {
-    executeDeleteCourse()
+    try {
+      await courseStore.deleteCourse(deleteTargetCourse.value.id)
+      deleteTargetCourse.value = null
+      Object.assign(modalState, {
+        visible: true,
+        type: 'success',
+        title: '删除成功',
+        message: '课程已移除',
+        buttonText: '确定',
+      })
+    } catch (e) {
+      Object.assign(modalState, {
+        visible: true,
+        type: 'error',
+        title: '删除失败',
+        message: '请稍后重试',
+        buttonText: '重试',
+      })
+    }
   } else {
-    modalState.value.visible = false
+    modalState.visible = false
   }
 }
 </script>
