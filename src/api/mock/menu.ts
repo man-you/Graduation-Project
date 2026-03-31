@@ -20,7 +20,7 @@ export const menuList: MenuItem[] = [
     weight: 'regular',
     isActive: true,
     path: '/courses',
-    roles: [ 'student'],
+    roles: [ 'student', 'teacher' ],
     pathMap: {
       teacher: '/teacher/courses',
       student: '/student/courses',

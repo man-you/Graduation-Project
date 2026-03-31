@@ -47,12 +47,18 @@ import {
   PhArrowFatLineLeft,
   PhArrowFatLineRight,
   PhFilePdf,
-  PhExam 
-
+  PhExam ,
+  PhSteps,
+  PhPencilSimple,
+  PhCaretDown,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
 export const icons = {
+   PhCaretDown,
+  PhCaretRight,
+  PhSteps,
+  PhPencilSimple,
   PhExam,
   PhFilePdf,
   PhArrowLeft,
@@ -63,7 +69,6 @@ export const icons = {
   PhArrowFatLineLeft,
   PhArrowFatLineRight,
   PhDownloadSimple,
-  PhCaretRight,
   PhSun,
   PhMoon,
   PhGraph,
@@ -101,4 +106,5 @@ export const icons = {
   PhTrash,
   PhArrowRight,
   PhGhost,
+
 }

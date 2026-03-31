@@ -1,8 +1,28 @@
 <template>
-  <div v-if="visible" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+  <div
+    v-if="visible"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    @click="handleBackdropClick"
+  >
     <div
       class="relative w-[420px] rounded-2xl bg-white px-8 pt-10 pb-8 text-center shadow-[0_20px_50px_rgba(0,0,0,0.15)] animate-modal-in"
+      @click.stop
     >
+      <!-- Close Button -->
+      <button
+        class="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-700 transition-all duration-200 shadow-sm"
+        @click="handleClose"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      </button>
+
       <!-- Icon -->
       <div
         class="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full"
@@ -36,7 +56,7 @@
             ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200/60'
             : 'bg-rose-600 hover:bg-rose-700 shadow-rose-200/60'
         "
-        @click="$emit('close')"
+        @click="handleConfirm"
       >
         {{ buttonText || '确定' }}
       </button>
@@ -53,7 +73,19 @@ defineProps<{
   buttonText?: string
 }>()
 
-defineEmits(['close'])
+const emit = defineEmits(['close', 'confirm'])
+
+const handleClose = () => {
+  emit('close')
+}
+
+const handleConfirm = () => {
+  emit('confirm')
+}
+
+const handleBackdropClick = () => {
+  emit('close')
+}
 </script>
 
 <style scoped>

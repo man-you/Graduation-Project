@@ -249,11 +249,12 @@ import { onMounted, ref, onUnmounted, watch } from 'vue'
 import * as d3 from 'd3'
 import { storeToRefs } from 'pinia'
 import { useCourseStore } from '@/stores/course.store'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 // --- Store 集成 ---
 const courseStore = useCourseStore()
 const { graphData, nodesLoading } = storeToRefs(courseStore)
+const route = useRoute()
 const router = useRouter()
 
 // --- 状态控制 ---
@@ -282,7 +283,7 @@ const handleDownload = (url, name) => {
   const link = document.createElement('a')
   link.href = url
   link.setAttribute('download', name || '下载文件.pdf')
-  link.setAttribute('target', '_blank')
+  // 移除 target="_blank" 属性，避免在新标签页中打开导致无法下载
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
@@ -331,7 +332,7 @@ const summarizeKnowledgePoint = (node) => {
   // 导航到知识点总结页面，并通过params传递nodeId
   router.push({
     name: 'StudentSummary',
-    params: { nodeId: node.id }
+    params: { nodeId: node.id },
   })
 }
 
@@ -379,8 +380,10 @@ const getChildCount = (node) => getChildren(node).length
 // --- 生命周期与交互 ---
 // 初始化：获取知识图谱数据
 onMounted(async () => {
-  const courseId = 121
-  await courseStore.getGraphData(courseId)
+  const courseId = Number(route.params.id)
+  if (courseId) {
+    await courseStore.getGraphData(courseId)
+  }
 })
 
 // 监听图谱数据变化，重新渲染图表

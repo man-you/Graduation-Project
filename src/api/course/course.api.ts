@@ -1,5 +1,6 @@
 import request from '@/request'
 import type { Course, CourseNode } from '@/types/course/course.type'
+import type { CreateNodeDto, UpdateNodeDto } from '@/types/node/node.type'
 
 /**
  * 获取所有课程列表
@@ -48,4 +49,45 @@ export const getNodeResourceApi = (nodeId: number): Promise<{ signedUrl: string 
   })
 }
 
+/**
+ * 删除课程
+ * 仅教师角色可以删除自己创建的课程
+ */
+export const deleteCourseApi = (courseId: number): Promise<void> => {
+  return request({
+    url: `/api/v1/course/${courseId}`,
+    method: 'delete',
+  })
+}
 
+/**
+ * 创建新节点
+ */
+export const createNodeApi = (createNodeDto: CreateNodeDto): Promise<{ id: number }> => {
+  return request({
+    url: '/api/v1/course',
+    method: 'post',
+    data: createNodeDto,
+  })
+}
+
+/**
+ * 更新节点信息
+ */
+export const updateNodeApi = (nodeId: number, updateNodeDto: UpdateNodeDto): Promise<void> => {
+  return request({
+    url: `/api/v1/course/${nodeId}`,
+    method: 'patch',
+    data: updateNodeDto,
+  })
+}
+
+/**
+ * 删除节点（递归删除子节点）
+ */
+export const deleteNodeApi = (nodeId: number): Promise<void> => {
+  return request({
+    url: `/api/v1/course/${nodeId}`,
+    method: 'delete',
+  })
+}

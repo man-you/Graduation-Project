@@ -17,9 +17,7 @@
           @click="showCourseGraph"
         >
           {{ courseTitle }}
-          <span
-            class="inline-block ml-2 text-xs font-normal text-slate-400"
-          >
+          <span class="inline-block ml-2 text-xs font-normal text-slate-400">
             点击查看知识图谱
           </span>
         </h1>
@@ -454,7 +452,13 @@ const goPrev = () => {
 }
 
 const goBack = () => routerBack()
-const showCourseGraph = () => router.push({ name: 'StudentKnowledges' })
+const showCourseGraph = () => {
+  const courseId = courseData.value?.[0]?.id
+  router.push({
+    name: 'StudentKnowledges',
+    params: { id: courseId },
+  })
+}
 
 const loadQuiz = () => {
   router.push({ name: 'StudentCourseQuiz', params: { nodeId: currentNode.value?.id } })
