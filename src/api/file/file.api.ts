@@ -1,8 +1,9 @@
 import request from '@/request'
-import type { 
+import type {
   FileResourceItem,
-  CreateFileDto, 
+  CreateFileDto,
   UpdateFileDto,
+  BindResourceDto,
 } from '@/types/file/file.type'
 
 /**
@@ -12,8 +13,8 @@ import type {
  * @param expireTime 签名过期时间（秒），默认3600秒
  */
 export const getSignedUrlApi = (
-  nodeId: number, 
-  method?: 'get' | 'post' | 'put' | 'delete', 
+  nodeId: number,
+  method?: 'get' | 'post' | 'put' | 'delete',
   expireTime?: number
 ): Promise<{ signedUrl: string }> => {
   return request({
@@ -48,6 +49,18 @@ export const createFileApi = (createDto: CreateFileDto): Promise<any> => {
     url: '/api/v1/tencent-cos/user/file',
     method: 'post',
     data: createDto
+  })
+}
+
+/**
+ * 绑定已有资源到节点
+ * @param bindData 可以是 BindResourceDto 对象或包含文件的 FormData
+ */
+export const bindResourceApi = (data: BindResourceDto): Promise<any> => {
+  return request({
+    url: '/api/v1/tencent-cos/teacher/resource',
+    method: 'post',
+    data
   })
 }
 

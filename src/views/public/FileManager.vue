@@ -18,13 +18,11 @@
     </Transition>
 
     <div class="relative flex flex-auto h-full">
-      <!-- 加载状态 -->
       <div v-if="loading" class="flex flex-auto flex-col items-center justify-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
         <p class="mt-4 text-lg font-medium text-slate-600 dark:text-slate-400">加载中...</p>
       </div>
 
-      <!-- 主要内容 -->
       <main v-else class="flex flex-col flex-auto overflow-y-auto overflow-x-hidden">
         <header
           class="sticky top-0 z-20 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between p-6 sm:py-10 md:px-10 border-b border-white/20 dark:border-slate-800/50 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl"
@@ -210,7 +208,7 @@
                 class="group relative aspect-square bg-slate-50 dark:bg-slate-800/50 rounded-[3rem] flex items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-700 overflow-hidden"
               >
                 <component
-                  :is="selectedItem?.type ? PhFileSearch : PhFolder"
+                  :is="selectedItem?.type === 'FOLDER' ? PhFolder : PhFileSearch"
                   :size="80"
                   weight="duotone"
                   class="text-slate-300 dark:text-slate-600 group-hover:scale-110 transition-transform duration-700"
@@ -228,7 +226,7 @@
                   <div
                     class="inline-flex mt-3 px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold"
                   >
-                    # {{ selectedItem.type || '文件夹' }}
+                    # {{ selectedItem.type }}
                   </div>
                 </div>
 
@@ -250,7 +248,7 @@
                       格式
                     </p>
                     <p class="mt-1 font-bold text-slate-700 dark:text-slate-200">
-                      {{ selectedItem.type || 'Directory' }}
+                      {{ selectedItem.type }}
                     </p>
                   </div>
                 </div>
@@ -278,7 +276,6 @@
       </Transition>
     </div>
 
-    <!-- 创建文件夹模态框 -->
     <Transition name="fade">
       <div
         v-if="showFolderModal"
@@ -308,7 +305,6 @@
       </div>
     </Transition>
 
-    <!-- 重命名模态框 -->
     <Transition name="fade">
       <div
         v-if="showRenameModalFlag"
@@ -344,27 +340,13 @@
       </div>
     </Transition>
 
-    <!-- 文件上传输入 -->
     <input ref="fileInput" type="file" multiple class="hidden" @change="handleFileSelect" />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import {
-  PhFolder,
-  PhFile,
-  PhX,
-  PhFolderOpen,
-  PhFileSearch,
-  PhCaretRight,
-  PhFolderPlus,
-  PhCloudArrowUp,
-  PhDotsThreeCircle,
-  PhFiles,
-  PhPencilSimple,
-  PhTrash,
-} from '@phosphor-icons/vue'
+import { PhFolder, PhFileSearch } from '@phosphor-icons/vue'
 import {
   listDirectoryApi,
   createFolderApi,
@@ -373,220 +355,194 @@ import {
   deleteResourceApi,
 } from '@/api/file/file.api'
 
-// 状态管理
+// ================= 类型定义 =================
+interface ResourceItem {
+  id: string
+  name: string
+  type: string
+  contents: string
+}
+
+interface PathNav {
+  id: string
+  name: string
+}
+
+// ================= 静态配置映射 =================
+const FILE_COLORS: Record<string, string> = {
+  PDF: 'bg-rose-500',
+  DOC: 'bg-blue-500',
+  XLS: 'bg-emerald-500',
+  TXT: 'bg-slate-500',
+  JPG: 'bg-amber-500',
+  PNG: 'bg-amber-500',
+  MP4: 'bg-purple-500',
+  AVI: 'bg-purple-500',
+  ZIP: 'bg-orange-500',
+  RAR: 'bg-orange-500',
+}
+
+// ================= 响应式状态 =================
+// 列表与导航
+const loading = ref(true)
+const folders = ref<ResourceItem[]>([])
+const files = ref<ResourceItem[]>([])
+const currentPath = ref<PathNav[]>([{ id: '', name: '根目录' }])
+
+// 侧边栏与选中项
 const isDrawerOpen = ref(false)
-const selectedItem = ref<any>(null)
-const currentPath = ref<{ id: string; name: string }[]>([])
-const folders = ref<any[]>([])
-const files = ref<any[]>([])
+const selectedItem = ref<ResourceItem | null>(null)
+
+// 模态框控制
 const showFolderModal = ref(false)
 const newFolderName = ref('')
 const showRenameModalFlag = ref(false)
 const renameName = ref('')
-const fileInput = ref<HTMLInputElement | null>(null)
-const loading = ref(true) // 添加加载状态
 
-// 计算属性
+// DOM 引用
+const fileInput = ref<HTMLInputElement | null>(null)
+
+// ================= 计算属性 =================
 const hasItems = computed(() => folders.value.length > 0 || files.value.length > 0)
 
-// 加载目录内容
+// 提取当前的相对父路径，供API复用，避免在多个函数中写重复的判断逻辑
+const currentDirId = computed(() => {
+  const len = currentPath.value.length
+  return len > 1 ? currentPath.value[len - 1]?.id : undefined
+})
+
+// ================= 核心 API 调用 =================
 const loadDirectory = async (relativePath?: string) => {
-  loading.value = true // 开始加载
+  loading.value = true
   try {
     const response = await listDirectoryApi(relativePath)
 
-    console.log('目录内容:', response)
+    folders.value = []
+    files.value = []
 
-    // API返回的是资源项数组，需要根据resourceType分类
     if (Array.isArray(response)) {
-      // 分类文件夹和文件
-      const allResources = response as any[]
-      folders.value = allResources
-        .filter((item) => item.resourceType === 'FOLDER')
-        .map((item) => ({
-          id: item.resourcePath || item.id, // 使用相对路径作为ID
+      // 优化：一次遍历完成分类与转换
+      response.forEach((item: any) => {
+        const resource: ResourceItem = {
+          id: item.resourcePath || item.id,
           name: item.resourceName,
-          type: item.fileFormat || 'FOLDER',
-          contents: item.fileSize || '0 items',
-        }))
+          type: item.fileFormat || (item.resourceType === 'FOLDER' ? 'FOLDER' : 'FILE'),
+          contents: item.fileSize || (item.resourceType === 'FOLDER' ? '0 items' : '0 Bytes'),
+        }
 
-      files.value = allResources
-        .filter((item) => item.resourceType === 'FILE')
-        .map((item) => ({
-          id: item.resourcePath || item.id, // 使用相对路径作为ID
-          name: item.resourceName,
-          type: item.fileFormat || 'FILE',
-          contents: item.fileSize || '0 Bytes',
-        }))
+        if (item.resourceType === 'FOLDER') {
+          folders.value.push(resource)
+        } else {
+          files.value.push(resource)
+        }
+      })
 
       // 构建路径导航
       if (relativePath) {
-        // 从relativePath参数解析路径层级
-        const pathParts = relativePath.split('/').filter((part) => part)
+        const pathParts = relativePath.split('/').filter(Boolean)
         currentPath.value = [
           { id: '', name: '根目录' },
           ...pathParts.map((part, index) => ({
-            id: pathParts.slice(0, index + 1).join('/'), // 不加末尾斜杠
+            id: pathParts.slice(0, index + 1).join('/'),
             name: part,
           })),
         ]
       } else {
         currentPath.value = [{ id: '', name: '根目录' }]
       }
-    } else {
-      // 备用处理：如果返回的不是数组（理论上不应该发生）
-      folders.value = []
-      files.value = []
-      currentPath.value = [{ id: '', name: '根目录' }]
     }
   } catch (error) {
     console.error('加载目录失败:', error)
-    // 处理错误情况
-    folders.value = []
-    files.value = []
     currentPath.value = [{ id: '', name: '根目录' }]
   } finally {
-    loading.value = false // 加载完成
+    loading.value = false
   }
 }
 
-// 打开侧边栏详情
-const openDrawer = (item: any) => {
+// ================= 交互事件处理 =================
+// --- 导航与抽屉 ---
+const openDrawer = (item: ResourceItem) => {
   selectedItem.value = item
   isDrawerOpen.value = true
 }
 
-// 关闭侧边栏
 const closeDrawer = () => {
   isDrawerOpen.value = false
   selectedItem.value = null
 }
 
-// 导航到根目录
 const navigateToRoot = () => {
-  currentPath.value = [{ id: '', name: '根目录' }]
   loadDirectory()
 }
 
-// 导航到指定路径
 const navigateTo = (relativePath: string) => {
-  // relativePath 应该是相对路径，不包含末尾斜杠
   const cleanPath = relativePath.endsWith('/') ? relativePath.slice(0, -1) : relativePath
   loadDirectory(cleanPath)
 }
 
-// 显示创建文件夹模态框
-const showCreateFolderModal = () => {
-  newFolderName.value = ''
-  showFolderModal.value = true
+// --- 文件上传 ---
+const handleFileUpload = () => {
+  fileInput.value?.click()
 }
 
-// 处理文件选择
 const handleFileSelect = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const fileList = target.files
-
-  if (!fileList || fileList.length === 0) return
+  if (!fileList?.length) return
 
   try {
-    const currentPathStr =
-      currentPath.value.length > 1 ? currentPath.value[currentPath.value.length - 1]?.id || '' : ''
-
-    console.log('当前上传路径:', currentPathStr)
-    console.log('准备上传文件数量:', fileList.length)
-
-    // 逐个处理文件上传
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i]
-      if (!file) continue // 添加空值检查
+      if (!file) continue
 
       const fileExtension = file.name.split('.').pop()?.toUpperCase() || 'FILE'
-      console.log(`正在上传文件: ${file.name}, 类型: ${fileExtension}, 大小: ${file.size} bytes`)
 
-      // 获取上传URL
+      // 获取上传 URL
       const uploadResponse = await createFileApi({
         resourceName: file.name,
         resourceType: 'FILE',
-        parentPath: currentPathStr || undefined,
+        parentPath: currentDirId.value,
         fileSize: formatFileSize(file.size),
         fileFormat: fileExtension,
       })
 
-      console.log('获取上传URL响应:', uploadResponse)
-
-      // 关键修复：使用预签名URL上传文件到COS
+      // 直传 COS
       if (uploadResponse.uploadUrl) {
         await uploadFileToCos(uploadResponse.uploadUrl, file)
-        console.log(`文件 ${file.name} 上传成功`)
       }
     }
 
-    console.log('所有文件上传完成，开始刷新目录...')
-    // 重新加载当前目录
-    loadDirectory(currentPathStr || undefined)
-    target.value = '' // 重置文件输入
-    console.log('目录刷新完成')
+    target.value = '' // 重置输入框
+    loadDirectory(currentDirId.value)
   } catch (error) {
     console.error('文件上传失败:', error)
   }
 }
 
-// 创建文件夹
+// --- 增删改操作 ---
+const showCreateFolderModal = () => {
+  newFolderName.value = ''
+  showFolderModal.value = true
+}
+
 const createFolder = async () => {
-  if (!newFolderName.value.trim()) return
+  const name = newFolderName.value.trim()
+  if (!name) return
 
   try {
-    const currentPathStr =
-      currentPath.value.length > 1 ? currentPath.value[currentPath.value.length - 1]?.id || '' : ''
-
-    console.log('创建文件夹 - 名称:', newFolderName.value.trim(), '路径:', currentPathStr)
-
     await createFolderApi({
-      resourceName: newFolderName.value.trim(),
+      resourceName: name,
       resourceType: 'FOLDER',
-      parentPath: currentPathStr || undefined,
+      parentPath: currentDirId.value,
     })
 
-    console.log('文件夹创建成功')
     showFolderModal.value = false
-    newFolderName.value = ''
-    // 重新加载当前目录
-    loadDirectory(currentPathStr || undefined)
+    loadDirectory(currentDirId.value)
   } catch (error) {
     console.error('创建文件夹失败:', error)
   }
 }
 
-// 处理文件上传
-const handleFileUpload = () => {
-  if (fileInput.value) {
-    fileInput.value.click()
-  }
-}
-
-// 新增：实际上传文件到COS的函数
-const uploadFileToCos = async (uploadUrl: string, file: File) => {
-  try {
-    const response = await fetch(uploadUrl, {
-      method: 'PUT', // 预签名URL通常是PUT方法
-      body: file,
-      headers: {
-        'Content-Type': file.type || 'application/octet-stream',
-      },
-    })
-
-    if (!response.ok) {
-      throw new Error(`上传失败: ${response.status} ${response.statusText}`)
-    }
-
-    return response
-  } catch (error) {
-    console.error('上传文件到COS时出错:', error)
-    throw error
-  }
-}
-
-// 显示重命名模态框
 const showRenameModal = () => {
   if (selectedItem.value) {
     renameName.value = selectedItem.value.name
@@ -594,45 +550,52 @@ const showRenameModal = () => {
   }
 }
 
-// 重命名资源
 const renameResource = async () => {
-  if (!renameName.value.trim() || !selectedItem.value) return
+  const newName = renameName.value.trim()
+  if (!newName || !selectedItem.value) return
 
   try {
     await renameResourceApi({
       oldPath: selectedItem.value.id,
-      newPath: renameName.value.trim(),
+      newPath: newName,
     })
 
     showRenameModalFlag.value = false
-    renameName.value = ''
     closeDrawer()
-    // 重新加载当前目录
-    const currentPathStr =
-      currentPath.value.length > 1 ? currentPath.value[currentPath.value.length - 1]?.id || '' : ''
-    loadDirectory(currentPathStr || undefined)
+    loadDirectory(currentDirId.value)
   } catch (error) {
     console.error('重命名失败:', error)
   }
 }
 
-// 删除资源
 const deleteResource = async () => {
   if (!selectedItem.value) return
 
   try {
     await deleteResourceApi(selectedItem.value.id)
     closeDrawer()
-    // 重新加载当前目录
-    const currentPathStr =
-      currentPath.value.length > 1 ? currentPath.value[currentPath.value.length - 1]?.id || '' : ''
-    loadDirectory(currentPathStr || undefined)
+    loadDirectory(currentDirId.value)
   } catch (error) {
     console.error('删除失败:', error)
   }
 }
 
-// 格式化文件大小
+// ================= 工具函数 =================
+const uploadFileToCos = async (uploadUrl: string, file: File) => {
+  const response = await fetch(uploadUrl, {
+    method: 'PUT',
+    body: file,
+    headers: {
+      'Content-Type': file.type || 'application/octet-stream',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`上传失败: ${response.status} ${response.statusText}`)
+  }
+  return response
+}
+
 const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes'
   const k = 1024
@@ -641,24 +604,9 @@ const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-// 获取文件类型颜色
-const getFileColor = (type: string) => {
-  const colors: Record<string, string> = {
-    PDF: 'bg-rose-500',
-    DOC: 'bg-blue-500',
-    XLS: 'bg-emerald-500',
-    TXT: 'bg-slate-500',
-    JPG: 'bg-amber-500',
-    PNG: 'bg-amber-500',
-    MP4: 'bg-purple-500',
-    AVI: 'bg-purple-500',
-    ZIP: 'bg-orange-500',
-    RAR: 'bg-orange-500',
-  }
-  return colors[type] || 'bg-indigo-500'
-}
+const getFileColor = (type: string) => FILE_COLORS[type] || 'bg-indigo-500'
 
-// 组件挂载时加载根目录
+// ================= 生命周期 =================
 onMounted(() => {
   loadDirectory()
 })

@@ -112,6 +112,20 @@
                   </p>
                 </template>
               </div>
+
+              <!-- 资源绑定区域 - 仅在 LEVEL4 显示 -->
+              <div
+                v-if="currentLevel === 'LEVEL4'"
+                class="space-y-2 pt-6 border-t border-slate-200"
+              >
+                <NodeBind
+                  :node-id="form.id || 0"
+                  v-model="resourcePath"
+                  v-model:fileName="resourceFileName"
+                  label="教学资源文件"
+                  @error="handleResourceError"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -164,15 +178,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { useNodeStore } from '@/stores/node.store'
 import { LEVEL_CONFIG, type NodeLevel } from '@/types/node/node.type'
-import {
-  PhArrowLeft,
-  PhBookOpen,
-  PhTreeStructure,
-  PhLightbulb,
-  PhClock,
-  PhKeyhole,
-} from '@phosphor-icons/vue'
+import NodeBind from '@/components/NodeBind.vue'
 
+/** * 1. 路由参数与基础状态
+ */
 const route = useRoute()
 const router = useRouter()
 const courseStore = useCourseStore()
@@ -180,13 +189,17 @@ const nodeStore = useNodeStore()
 
 const courseId = Number(route.params.courseId)
 const nodeIdParam = route.params.nodeId
-const isEditMode = nodeIdParam !== 'new' && nodeIdParam !== undefined
+const isEditMode = !!nodeIdParam && nodeIdParam !== 'new'
 const nodeId = isEditMode ? Number(nodeIdParam) : null
-const fromSource = route.query.from as string | undefined
 
 const saving = ref(false)
 const currentLevel = ref<NodeLevel>((route.query.level as NodeLevel) || 'LEVEL1')
 
+// 资源绑定相关状态
+const resourcePath = ref<string | null>(null)
+const resourceFileName = ref<string | null>(null)
+
+// 响应式表单对象
 const form = reactive({
   id: nodeId || 0,
   nodeName: '',
@@ -196,81 +209,123 @@ const form = reactive({
   parentNodeId: route.query.parentNodeId ? Number(route.query.parentNodeId) : null,
 })
 
+/** * 2. 内部工具函数 (查找与解析)
+ */
+
+// 在树形结构中深度遍历查找指定节点
+const findNodeInTree = (nodes: any[], targetId: number): any => {
+  for (const node of nodes) {
+    if (node.id === targetId) return node
+    if (node.childNodes?.length) {
+      const found = findNodeInTree(node.childNodes, targetId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+// 解析节点关联的资源（处理对象或数组两种后端结构）
+const parseResource = (data: any) => {
+  if (!data.resource) return null
+  return Array.isArray(data.resource) ? data.resource[0] : data.resource
+}
+
+/** * 3. 计算属性
+ */
 const currentCourse = computed(() => courseStore.courseList.find((c) => c.id === courseId))
 const levelLabel = computed(() => LEVEL_CONFIG[currentLevel.value]?.label || '未知层级')
 
-const findNodeById = (id: number): any => {
-  const walk = (nodes: any[]): any => {
-    for (const node of nodes) {
-      if (node.id === id) return node
-      if (node.childNodes) {
-        const found = walk(node.childNodes)
-        if (found) return found
-      }
-    }
-    return null
-  }
-  return walk(nodeStore.nodes)
-}
-
+// 获取父节点信息用于展示
 const parentNode = computed(() => {
-  const pId = isEditMode ? findNodeById(nodeId!)?.parentNodeId : form.parentNodeId
-  return pId ? findNodeById(pId) : null
+  const pId = isEditMode
+    ? findNodeInTree(nodeStore.nodes, nodeId!)?.parentNodeId
+    : form.parentNodeId
+  return pId ? findNodeInTree(nodeStore.nodes, pId) : null
 })
 
+/** * 4. 导航与资源处理
+ */
 const goBack = () => {
-  if (fromSource === 'courseList' && !isEditMode) {
+  // 如果从课程列表直接跳转创建 LEVEL1，则返回课程列表，否则返回管理页
+  if (route.query.from === 'courseList' && !isEditMode) {
     router.push({ name: 'TeacherCourses' })
   } else {
     router.push({ name: 'TeacherNodeManage', params: { courseId } })
   }
 }
 
+const handleResourceError = (error: any) => console.error('资源操作失败:', error)
+
+/** * 5. 核心业务：保存逻辑
+ */
 const saveNode = async () => {
-  if (!form.nodeName.trim()) return
+  if (!form.nodeName.trim() || saving.value) return
+
   saving.value = true
   try {
-    const payload = {
+    const isLevel4 = currentLevel.value === 'LEVEL4'
+
+    // 构建基础 DTO
+    const basePayload = {
       nodeName: form.nodeName,
       description: form.description,
-      ...(currentLevel.value === 'LEVEL4' && { estimatedDuration: form.estimatedDuration }),
+      ...(isLevel4 && { estimatedDuration: form.estimatedDuration }),
     }
 
     if (isEditMode) {
-      await nodeStore.handleOperation('update', { id: form.id, dto: payload })
+      await nodeStore.handleOperation('update', { id: form.id, dto: basePayload })
     } else {
       const createPayload = {
         ...form,
         courseId,
-        ...(currentLevel.value !== 'LEVEL4' && { estimatedDuration: undefined }),
+        // 非 LEVEL4 节点强制不传时长
+        ...(!isLevel4 && { estimatedDuration: undefined }),
       }
-      await nodeStore.handleOperation('create', createPayload)
+      const result = await nodeStore.handleOperation('create', createPayload)
 
-      if (currentLevel.value === 'LEVEL1') {
-        await courseStore.getCourseList(true)
-      }
+      // 新建 LEVEL1 需要刷新课程列表以更新统计数据
+      if (currentLevel.value === 'LEVEL1') await courseStore.getCourseList(true)
+
+      // 为新建的 LEVEL4 节点更新 ID，以便后续 NodeBind 组件正常工作
+      if (isLevel4 && result?.id) form.id = result.id
     }
+
     goBack()
   } catch (err) {
-    console.error('Save failed:', err)
+    console.error('保存失败:', err)
   } finally {
     saving.value = false
   }
 }
 
+/** * 6. 生命周期初始化
+ */
 onMounted(async () => {
-  if (!courseStore.courseList.length) await courseStore.getCourseList()
-  await nodeStore.getNodes(courseId)
+  // 确保基础数据存在
+  const tasks = [nodeStore.getNodes(courseId)]
+  if (!courseStore.courseList.length) tasks.push(courseStore.getCourseList())
+  await Promise.all(tasks)
 
-  if (isEditMode) {
-    const data = findNodeById(nodeId!)
+  // 编辑模式：回填表单数据
+  if (isEditMode && nodeId) {
+    const data = findNodeInTree(nodeStore.nodes, nodeId)
     if (data) {
-      form.id = data.id
-      form.nodeName = data.nodeName
-      form.description = data.description || ''
-      form.estimatedDuration = data.estimatedDuration
-      form.nodeLevel = data.nodeLevel
+      // 批量更新表单字段
+      Object.assign(form, {
+        id: data.id,
+        nodeName: data.nodeName,
+        description: data.description || '',
+        estimatedDuration: data.estimatedDuration,
+        nodeLevel: data.nodeLevel,
+      })
       currentLevel.value = data.nodeLevel
+
+      // 处理关联资源回显
+      const res = parseResource(data)
+      if (res) {
+        resourcePath.value = String(res.id)
+        resourceFileName.value = res.resourceName
+      }
     }
   }
 })

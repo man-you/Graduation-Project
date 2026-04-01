@@ -21,12 +21,21 @@ export const useNodeStore = defineStore('node', {
     },
 
     async handleOperation(type: 'create' | 'update' | 'delete', data: any) {
-      if (type === 'create') await createNodeApi(data);
-      else if (type === 'update') await updateNodeApi(data.id, data.dto);
-      else await deleteNodeApi(data.id);
+      let result: any = null;
+      if (type === 'create') {
+        result = await createNodeApi(data);
+      }
+      else if (type === 'update') {
+        await updateNodeApi(data.id, data.dto);
+      }
+      else {
+        await deleteNodeApi(data.id);
+      }
 
       // 操作完成后强制刷新
       await this.getNodes(this.currentCourseId!, true);
+      
+      return result;
     }
   }
 })

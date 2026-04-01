@@ -129,6 +129,7 @@
               </button>
               <div class="w-px h-4 bg-slate-200 mx-1"></div>
               <button
+                v-if="node.nodeLevel !== 'LEVEL1'"
                 @click="handleDelete(node.id)"
                 class="btn-action hover:text-red-500"
                 title="删除"
@@ -149,94 +150,122 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { useNodeStore } from '@/stores/node.store'
 import { LEVEL_CONFIG, type NodeLevel } from '@/types/node/node.type'
-import {
-  PhArrowLeft,
-  PhTreeStructure,
-  PhCaretDown,
-  PhCaretRight,
-  PhSteps,
-  PhPlus,
-  PhPlusCircle,
-  PhPencilSimple,
-  PhTrash,
-} from '@phosphor-icons/vue'
-
+import { PhCaretDown, PhCaretRight } from '@phosphor-icons/vue'
+/** * 1. 基础状态与 Store
+ */
 const route = useRoute()
 const router = useRouter()
 const nodeStore = useNodeStore()
 const courseStore = useCourseStore()
 
 const courseId = Number(route.params.courseId)
-const expandedNodes = ref(new Set<number>())
+// 使用 Set 存储展开节点的 ID，查询复杂度为 O(1)
+const expandedNodeIds = ref(new Set<number>())
 
 const loading = computed(() => nodeStore.loading)
 
-// 获取层级徽章样式
+/** * 2. 核心逻辑：树转平铺列表
+ * 将嵌套的 tree 结构转化为带 depth 信息的数组，方便 v-for 直接渲染
+ */
+const flatNodes = computed(() => {
+  const result: any[] = []
+
+  // 使用辅助函数进行深度优先遍历 (DFS)
+  const flatten = (nodes: any[], depth = 0) => {
+    for (const node of nodes) {
+      const isExpanded = expandedNodeIds.value.has(node.id)
+      const hasChildren = !!(node.childNodes && node.childNodes.length > 0)
+
+      result.push({
+        ...node,
+        depth,
+        hasChildren,
+        isExpanded,
+      })
+
+      // 如果节点已展开且有子节点，继续递归
+      if (isExpanded && hasChildren) {
+        flatten(node.childNodes, depth + 1)
+      }
+    }
+  }
+
+  flatten(nodeStore.nodes)
+  return result
+})
+
+/** * 3. 交互操作函数
+ */
+
+// 切换展开/折叠
+const toggleNode = (id: number) => {
+  if (expandedNodeIds.value.has(id)) {
+    expandedNodeIds.value.delete(id)
+  } else {
+    expandedNodeIds.value.add(id)
+  }
+}
+
+// 跳转至创建页面
+const goToCreateNode = (level: NodeLevel, parentNodeId: number | null = null) => {
+  router.push({
+    name: 'TeacherNodeCreate',
+    params: { courseId },
+    query: { level, ...(parentNodeId && { parentNodeId }) },
+  })
+}
+
+// 跳转至编辑页面
+const goToEditNode = (node: any) => {
+  router.push({
+    name: 'TeacherNodeEdit',
+    params: { courseId, nodeId: node.id },
+  })
+}
+
+// 删除节点
+const handleDelete = async (id: number) => {
+  if (!confirm('确定删除吗？操作将影响所有关联的学习资源。')) return
+  await nodeStore.handleOperation('delete', { id })
+  // 删除后尝试刷新列表
+  nodeStore.getNodes(courseId, true)
+}
+
+/** * 4. 辅助工具函数
+ */
+
+// 计算下一级 Level 字符串 (例如 LEVEL1 -> LEVEL2)
+const getNextLevel = (currentLevel: string): NodeLevel => {
+  const num = parseInt(currentLevel.replace('LEVEL', ''))
+  return `LEVEL${num + 1}` as NodeLevel
+}
+
+// 获取层级 UI 样式
 const getLevelBadgeClass = (level: string) => {
-  const colors: Record<string, string> = {
+  const styles: Record<string, string> = {
     LEVEL1: 'text-indigo-500 bg-indigo-50 border-indigo-100',
     LEVEL2: 'text-amber-500 bg-amber-50 border-amber-100',
     LEVEL3: 'text-emerald-500 bg-emerald-50 border-emerald-100',
     LEVEL4: 'text-blue-500 bg-blue-50 border-blue-100',
   }
-  return colors[level] || 'text-slate-400 bg-slate-50 border-slate-100'
+  return styles[level] || 'text-slate-400 bg-slate-50 border-slate-100'
 }
 
-const flatNodes = computed(() => {
-  const list: any[] = []
-  const walk = (nodes: any[], depth = 0) => {
-    nodes.forEach((n) => {
-      const isExpanded = expandedNodes.value.has(n.id)
-      list.push({ ...n, depth, hasChildren: !!n.childNodes?.length, isExpanded })
-      if (isExpanded && n.childNodes) walk(n.childNodes, depth + 1)
-    })
-  }
-  walk(nodeStore.nodes)
-  return list
-})
+const goBack = () => router.push({ name: 'TeacherCourses' })
 
-const toggleNode = (id: number) => {
-  expandedNodes.value.has(id) ? expandedNodes.value.delete(id) : expandedNodes.value.add(id)
-}
-
-const goToEditNode = (node: any) => {
-  router.push({ name: 'TeacherNodeEdit', params: { courseId, nodeId: node.id } })
-}
-
-const goToCreateNode = (lvl: NodeLevel, pId: number | null = null) => {
-  const query: any = { level: lvl }
-  if (pId !== null) query.parentNodeId = pId
-
-  router.push({
-    name: 'TeacherNodeCreate',
-    params: { courseId },
-    query: query,
-  })
-}
-
-const handleDelete = async (id: number) => {
-  if (confirm('确定删除吗？操作将影响所有关联的学习资源。'))
-    await nodeStore.handleOperation('delete', { id })
-}
-
-const getNextLevel = (lvl: string) => `LEVEL${parseInt(lvl.slice(-1)) + 1}` as NodeLevel
-
-const goBack = () => {
-  router.push({ name: 'TeacherCourses' })
-}
-
+/** * 5. 生命周期与监听
+ */
 onMounted(() => {
-  if (!courseStore.courseList.length) courseStore.getCourseList()
+  // 仅在 Store 为空时获取课程列表，减少冗余请求
+  if (courseStore.courseList.length === 0) courseStore.getCourseList()
   nodeStore.getNodes(courseId)
 })
 
+// 监听路由返回，如果是从编辑/创建页面回来，自动刷新数据
 watch(
   () => route.name,
-  (newName, oldName) => {
-    if (
-      (oldName === 'TeacherNodeCreate' || oldName === 'TeacherNodeEdit') &&
-      newName === 'TeacherNodeManage'
-    ) {
+  (name) => {
+    if (name === 'TeacherNodeManage') {
       nodeStore.getNodes(courseId, true)
     }
   },

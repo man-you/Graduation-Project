@@ -1,3 +1,5 @@
+export type FileType = 'VIDEO' | 'PDF'
+
 /**
  * 文件或文件夹资源项（API返回的实际格式）
  */
@@ -41,19 +43,23 @@ export interface CreateFileDto {
   fileSize?: string
   fileFormat?: string
 }
+/**
+ * 节点绑定资源
+ */
+export interface BindResourceDto {
+  resourceName: string
+  resourceType: FileType
+  fileSize: string
+  fileFormat: string
+  nodeId: number
+}
 
 /**
  * 更新文件或文件夹的请求数据（用于重命名等操作）
  */
 export interface UpdateFileDto {
-  oldPath?: string
-  newPath?: string
-  resourceName?: string
-  resourcePath?: string
-  resourceType?: 'FILE' | 'FOLDER'
-  parentPath?: string
-  fileSize?: string
-  fileFormat?: string
+  oldPath: string
+  newPath: string
 }
 
 /**
