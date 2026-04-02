@@ -6,7 +6,7 @@ import type { Exercise, SubmitQuizPayload, SubmitResult } from '@/types/course/e
  */
 export const getExercisesByNodeIdApi = (nodeId: number): Promise<Exercise[]> => {
   return request({
-    url: `/api/v1/quiz/${nodeId}`,
+    url: `/api/v1/quiz/exercises/${nodeId}`,
     method: 'get',
   })
 }

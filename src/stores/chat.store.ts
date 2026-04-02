@@ -338,7 +338,7 @@ export const useChatStore = defineStore('chat', {
     async startAnalysisMode(nodeId: number,modes: 'analysis' | 'summary') {
       // 重置当前对话状态
       this.resetConversation()
-      
+
       try {
         // 调用后端分析接口，传入分析数据和模式参数
         const token = getToken()

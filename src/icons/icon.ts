@@ -62,6 +62,7 @@ import {
   PhFiles,
   PhPencilSimple,
   PhKeyhole,
+  PhKey
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
@@ -128,4 +129,5 @@ export const icons = {
   PhFiles,
   PhPencilSimple,
   PhKeyhole,
+  PhKey,
 }
