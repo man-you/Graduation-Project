@@ -68,14 +68,44 @@ export const bindResourceApi = (data: BindResourceDto): Promise<any> => {
  * 列出目录内容
  * @param path 目录路径，可选
  */
-export const listDirectoryApi = (path?: string): Promise<FileResourceItem[]> => {
+/**
+ * 获取目录列表
+ * @param path 当前路径
+ * @param userRole 用户角色 (从 authStore 获取)
+ */
+export const listDirectoryApi = (
+  path?: string,
+): Promise<FileResourceItem[]> => {
   return request({
     url: '/api/v1/tencent-cos/user/list',
     method: 'get',
-    params: { path }
+    params: {
+      path
+    }
   })
 }
-
+/**
+ * 列出目录内容
+ * @param path 目录路径，可选
+ */
+/**
+ * 获取目录列表
+ * @param path 当前路径
+ * @param userRole 用户角色 (从 authStore 获取)
+ */
+export const listPublicApi = (
+  path?: string,
+  courseId?: number
+): Promise<FileResourceItem[]> => {
+  return request({
+    url: '/api/v1/tencent-cos/course/list',
+    method: 'get',
+    params: {
+      path,
+      courseId
+    }
+  })
+}
 /**
  * 重命名文件或文件夹
  * @param updateDto 包含oldPath和newPath的更新信息
@@ -92,10 +122,10 @@ export const renameResourceApi = (updateDto: UpdateFileDto): Promise<any> => {
  * 删除文件或文件夹
  * @param resourcePath 资源路径
  */
-export const deleteResourceApi = (resourcePath: string): Promise<any> => {
+export const deleteResourceApi = (resourcePath: string, courseId?: number): Promise<any> => {
   return request({
     url: '/api/v1/tencent-cos/user/delete',
     method: 'delete',
-    params: { path: resourcePath }
+    params: { path: resourcePath, courseId }
   })
 }

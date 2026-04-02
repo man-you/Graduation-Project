@@ -110,31 +110,53 @@
             </div>
 
             <div
-              class="flex items-center gap-1 bg-slate-50 p-1 rounded-xl opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0"
+              class="flex items-center gap-1 bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm"
             >
+              <!-- 1. 管理资源 -->
+              <button
+                v-show="node.nodeLevel === 'LEVEL1'"
+                @click="goToManageResources(node)"
+                class="group relative flex items-center justify-center p-2 rounded-xl text-slate-500 hover:bg-purple-50 hover:text-purple-600 transition-all duration-200"
+              >
+                <PhFolderOpen :size="16" weight="bold" />
+              </button>
+
+              <!-- 2. 习题管理 -->
+              <button
+                v-show="node.nodeLevel === 'LEVEL4'"
+                @click="goToManageCourses(node)"
+                class="group relative flex items-center justify-center p-2 rounded-xl text-slate-500 hover:bg-purple-50 hover:text-purple-600 transition-all duration-200"
+              >
+                <PhNotebook :size="16" weight="bold" />
+              </button>
+
+              <!-- 3. 添加子项 -->
               <button
                 v-if="node.nodeLevel !== 'LEVEL4'"
                 @click="goToCreateNode(getNextLevel(node.nodeLevel), node.id)"
-                class="btn-action hover:text-blue-600"
-                title="添加子项"
+                class="group relative flex items-center justify-center p-2 rounded-xl text-slate-500 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
               >
-                <PhPlus :size="14" weight="bold" />
+                <PhPlus :size="16" weight="bold" />
               </button>
+
+              <!-- 4. 编辑 -->
               <button
                 @click="goToEditNode(node)"
-                class="btn-action hover:text-emerald-600"
-                title="编辑"
+                class="group relative flex items-center justify-center p-2 rounded-xl text-slate-500 hover:bg-emerald-50 hover:text-emerald-600 transition-all duration-200"
               >
-                <PhPencilSimple :size="14" weight="bold" />
+                <PhPencilSimple :size="16" weight="bold" />
               </button>
+
+              <!-- 分割线 -->
               <div class="w-px h-4 bg-slate-200 mx-1"></div>
+
+              <!-- 5. 删除 -->
               <button
                 v-if="node.nodeLevel !== 'LEVEL1'"
                 @click="handleDelete(node.id)"
-                class="btn-action hover:text-red-500"
-                title="删除"
+                class="group relative flex items-center justify-center p-2 rounded-xl text-slate-500 hover:bg-red-50 hover:text-red-500 transition-all duration-200"
               >
-                <PhTrash :size="14" weight="bold" />
+                <PhTrash :size="16" weight="bold" />
               </button>
             </div>
           </div>
@@ -150,7 +172,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { useNodeStore } from '@/stores/node.store'
 import { LEVEL_CONFIG, type NodeLevel } from '@/types/node/node.type'
-import { PhCaretDown, PhCaretRight } from '@phosphor-icons/vue'
+import { PhCaretDown, PhCaretRight, PhFolderOpen, PhNotebook } from '@phosphor-icons/vue'
 /** * 1. 基础状态与 Store
  */
 const route = useRoute()
@@ -220,6 +242,22 @@ const goToEditNode = (node: any) => {
   router.push({
     name: 'TeacherNodeEdit',
     params: { courseId, nodeId: node.id },
+  })
+}
+
+// 跳转至资源管理页面
+const goToManageResources = (node: any) => {
+  router.push({
+    name: 'TeacherFiles',
+    query: { courseId: node.id },
+  })
+}
+
+// 跳转至习题管理页面
+const goToManageCourses = (node: any) => {
+  router.push({
+    name: 'TeacherQuiz',
+    params: { nodeId: node.id },
   })
 }
 

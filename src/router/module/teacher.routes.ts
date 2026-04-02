@@ -27,9 +27,16 @@ export const teacherChildrenRoutes: RouteRecordRaw[] = [
     meta: { roles: ['teacher'], title: '创建节点' },
     props: true
   },
+    {
+    path: 'manage/courses/question/:nodeId',
+    name: 'TeacherQuiz',
+    component: () => import('@/views/teacher/QuizManage.vue'),
+    meta: { roles: ['teacher'], title: '创建节点' },
+    props: true
+  },
   {
     path: 'files',
-    name: 'teacherFiles',
+    name: 'TeacherFiles',
     component: () => import('@/views/public/FileManager.vue'),
     meta: { roles: ['teacher'], title: '文件管理' },
   },

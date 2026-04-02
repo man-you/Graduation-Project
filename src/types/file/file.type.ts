@@ -10,6 +10,7 @@ export interface FileResourceItem {
   fileSize: string | null
   fileFormat: string | null
   id?: string
+  isPublic?: boolean
 }
 
 /**
@@ -42,6 +43,8 @@ export interface CreateFileDto {
   parentPath?: string
   fileSize?: string
   fileFormat?: string
+  isPublic?: boolean
+  courseId?: number
 }
 /**
  * 节点绑定资源
@@ -60,6 +63,7 @@ export interface BindResourceDto {
 export interface UpdateFileDto {
   oldPath: string
   newPath: string
+  courseId?: number
 }
 
 /**
