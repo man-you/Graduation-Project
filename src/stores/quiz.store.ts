@@ -4,8 +4,8 @@ import {
   createExerciseApi,
   updateExerciseApi,
   deleteExerciseApi
-} from '@/api/quiz/quiz.api'
-import type { Exercise, CreateExerciseDTO, UpdateExerciseDTO } from '@/types/quiz/quiz.type'
+} from '@/api/quiz.api'
+import type { Exercise, CreateExerciseDTO, UpdateExerciseDTO } from '@/types/quiz.type'
 
 interface QuizState {
   exercises: Exercise[]

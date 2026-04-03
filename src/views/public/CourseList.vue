@@ -186,7 +186,7 @@ import { useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { useAuthStore } from '@/stores/auth.store'
 import ResultModal from '@/components/ResultModal.vue'
-import type { Course } from '@/types/course/course.type'
+import type { Course } from '@/types/course.type'
 
 // --- 基础状态 ---
 const router = useRouter()

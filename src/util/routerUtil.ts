@@ -3,7 +3,7 @@
  * 封装路由相关通用方法
  */
 import router from '@/router'
-import { menuList } from '@/api/mock/menu'
+import { menuList } from '@/api/menu'
 import { ROLE_ROUTE_MAP } from '@/router/config/roleHomeMap'
 
 /**

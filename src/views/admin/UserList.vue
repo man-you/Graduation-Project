@@ -407,7 +407,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useAdminStore } from '@/stores/admin.store'
 import { PhUsers, PhPlus, PhX, PhTrash } from '@phosphor-icons/vue'
 import ResultModal from '@/components/ResultModal.vue'
-import type { AdminUser, UserFormData } from '@/types/admin/adminUser.type'
+import type { AdminUser, UserFormData } from '@/types/adminUser.type'
 
 const adminStore = useAdminStore()
 const ROLE_MAP: Record<string, string> = {

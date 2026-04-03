@@ -1,5 +1,5 @@
 import request from '@/request'
-import type { Exercise, SubmitQuizPayload, SubmitResult } from '@/types/course/exercise.type'
+import type { Exercise, SubmitQuizPayload, SubmitResult } from '@/types/exercise.type'
 
 /**
  * 获取指定节点的习题列表

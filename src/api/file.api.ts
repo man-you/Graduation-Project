@@ -4,7 +4,7 @@ import type {
   CreateFileDto,
   UpdateFileDto,
   BindResourceDto,
-} from '@/types/file/file.type'
+} from '@/types/file.type'
 
 /**
  * 获取COS资源的预签名URL，用于前端临时访问

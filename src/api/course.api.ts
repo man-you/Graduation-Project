@@ -1,6 +1,6 @@
 import request from '@/request'
-import type { Course, CourseNode } from '@/types/course/course.type'
-import type { CreateNodeDto, UpdateNodeDto } from '@/types/node/node.type'
+import type { Course, CourseNode } from '@/types/course.type'
+import type { CreateNodeDto, UpdateNodeDto } from '@/types/node.type'
 
 /**
  * 获取所有课程列表
@@ -45,7 +45,7 @@ export const getNodeResourceApi = (nodeId: number, resourceType?: 'PPT' | 'VIDEO
   return request({
     url: '/api/v1/tencent-cos/signed-url',
     method: 'get',
-    params: { 
+    params: {
       nodeId,
       ...(resourceType ? { resourceType } : {})
     }

@@ -52,8 +52,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import axios from 'axios'
-import { bindResourceApi } from '@/api/file/file.api'
-import type { FileType, BindResourceDto } from '@/types/file/file.type'
+import { bindResourceApi } from '@/api/file.api'
+import type { FileType, BindResourceDto } from '@/types/file.type'
 
 // --- Props & Emits ---
 const props = defineProps<{

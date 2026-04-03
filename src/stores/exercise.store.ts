@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
-import type { Exercise, ExerciseAnswer, SubmitQuizPayload, SubmitResult } from '@/types/course/exercise.type'
-import { getExercisesByNodeIdApi, submitExerciseAnswersApi } from '@/api/course/exercise.api'
+import type { Exercise, ExerciseAnswer, SubmitQuizPayload, SubmitResult } from '@/types/exercise.type'
+import { getExercisesByNodeIdApi, submitExerciseAnswersApi } from '@/api/exercise.api'
 
 export const useExerciseStore = defineStore('exercise', {
   state: () => ({
@@ -40,7 +40,7 @@ export const useExerciseStore = defineStore('exercise', {
     async submitAnswers() {
       if (this.submitting || !this.currentNodeId) return
       this.submitting = true
-      
+
       try {
         const payload: SubmitQuizPayload = {
           nodeId: this.currentNodeId,

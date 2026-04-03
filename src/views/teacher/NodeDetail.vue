@@ -177,7 +177,7 @@ import { ref, computed, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { useNodeStore } from '@/stores/node.store'
-import { LEVEL_CONFIG, type NodeLevel } from '@/types/node/node.type'
+import { LEVEL_CONFIG, type NodeLevel } from '@/types/node.type'
 import NodeBind from '@/components/NodeBind.vue'
 
 /** * 1. 路由参数与基础状态

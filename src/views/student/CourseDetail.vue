@@ -257,7 +257,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { routerBack } from '@/util/routerUtil'
 import PDFViewer from '@/components/PDFViewer.vue'
-import { getNodeResourceApi } from '@/api/course/course.api'
+import { getNodeResourceApi } from '@/api/course.api'
 
 // --- 状态初始化 ---
 const route = useRoute()

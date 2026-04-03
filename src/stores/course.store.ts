@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import type { Course, CourseNode } from '@/types/course/course.type'
+import type { Course, CourseNode } from '@/types/course.type'
 import {
   getCourseListApi,
   getCourseKnowledgeGraphApi,
   getCouseNodesApi,
   deleteCourseApi
-} from '@/api/course/course.api'
+} from '@/api/course.api'
 
 interface GraphData {
   nodes: any[]

@@ -1,5 +1,5 @@
 import request from '@/request'
-import type { AdminUser, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/admin/adminUser.type'
+import type { AdminUser, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/adminUser.type'
 
 export const getUserListApi = (params: {
   pageNum?: number

@@ -1,8 +1,8 @@
 import { setToken, removeToken } from '@/util/authUtil'
 import { defineStore } from 'pinia'
-import { loginApi, registerApi, getUserInfoApi } from '@/api/user/user.api'
+import { loginApi, registerApi, getUserInfoApi } from '@/api/user.api'
 import router from '@/router'
-import type { User } from '@/types/user/user.type'
+import type { User } from '@/types/user.type'
 import { loadUserRoutes } from '@/util/routerUtil'
 
 interface UserState {

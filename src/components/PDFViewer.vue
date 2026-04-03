@@ -65,7 +65,7 @@
 <script setup>
 import { ref, onBeforeUnmount, watch } from 'vue'
 import { PhFilePdf, PhX, PhEye } from '@phosphor-icons/vue'
-import { getNodeResourceApi } from '@/api/course/course.api'
+import { getNodeResourceApi } from '@/api/course.api'
 
 const props = defineProps({
   nodeId: { type: [Number, String], required: true },

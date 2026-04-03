@@ -320,7 +320,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import ResultModal from '@/components/ResultModal.vue'
 import defaultAvatar from '@/assets/R.png'
-import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user/user.api'
+import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user.api'
 import { validateSecurityForm } from '@/util/validateSecurityForm'
 import {
   PhUserFocus,

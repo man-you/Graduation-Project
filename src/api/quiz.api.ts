@@ -1,5 +1,5 @@
 import request from '@/request'
-import type { Exercise, CreateExerciseDTO, UpdateExerciseDTO } from '@/types/quiz/quiz.type'
+import type { Exercise, CreateExerciseDTO, UpdateExerciseDTO } from '@/types/quiz.type'
 
 /**
  * 获取指定节点的所有习题

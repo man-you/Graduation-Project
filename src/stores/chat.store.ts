@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import type { ChatMessage, Pagination } from '../types/chat/chat.type'
+import type { ChatMessage, Pagination } from '../types/chat.type'
 import { getToken } from '../util/authUtil'
 import {
   getMessageListApi,
   getConversationListApi,
   deleteConversationApi,
-} from '../api/chat/chat.api'
+} from '../api/chat.api'
 
 interface ChatState {
   conversationId: number | null

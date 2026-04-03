@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getCouseNodesApi, createNodeApi, updateNodeApi, deleteNodeApi } from '@/api/course/course.api'
+import { getCouseNodesApi, createNodeApi, updateNodeApi, deleteNodeApi } from '@/api/course.api'
 
 export const useNodeStore = defineStore('node', {
   state: () => ({
@@ -34,7 +34,7 @@ export const useNodeStore = defineStore('node', {
 
       // 操作完成后强制刷新
       await this.getNodes(this.currentCourseId!, true);
-      
+
       return result;
     }
   }

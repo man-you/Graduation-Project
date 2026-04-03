@@ -171,7 +171,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useCourseStore } from '@/stores/course.store'
 import { useNodeStore } from '@/stores/node.store'
-import { LEVEL_CONFIG, type NodeLevel } from '@/types/node/node.type'
+import { LEVEL_CONFIG, type NodeLevel } from '@/types/node.type'
 import { PhCaretDown, PhCaretRight, PhFolderOpen, PhNotebook } from '@phosphor-icons/vue'
 /** * 1. 基础状态与 Store
  */

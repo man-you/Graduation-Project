@@ -277,7 +277,7 @@
 import { ref, computed, onMounted, h } from 'vue'
 import { useRoute } from 'vue-router'
 import * as Icons from '@phosphor-icons/vue'
-import * as FileApi from '@/api/file/file.api'
+import * as FileApi from '@/api/file.api'
 
 // --- 类型与图标解构 ---
 const {
