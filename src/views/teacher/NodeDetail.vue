@@ -113,13 +113,13 @@
                 </template>
               </div>
 
-              <!-- 资源绑定区域 - 仅在 LEVEL4 显示 -->
+              <!-- 资源绑定区域 - 仅在 LEVEL4 且节点ID存在时显示 -->
               <div
-                v-if="currentLevel === 'LEVEL4'"
+                v-if="currentLevel === 'LEVEL4' && form.id > 0"
                 class="space-y-2 pt-6 border-t border-slate-200"
               >
                 <NodeBind
-                  :node-id="form.id || 0"
+                  :node-id="form.id"
                   v-model="resourcePath"
                   v-model:fileName="resourceFileName"
                   label="教学资源文件"

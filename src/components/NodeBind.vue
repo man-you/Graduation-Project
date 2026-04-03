@@ -34,7 +34,7 @@
 
         <template v-else>
           <PhSpinner class="animate-spin text-blue-600" :size="24" />
-          <p class="mt-2 text-sm text-blue-600">正在上传至腾讯云...</p>
+          <p class="mt-2 text-sm text-blue-600">正在上传云端...</p>
         </template>
 
         <input

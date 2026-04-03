@@ -90,12 +90,6 @@
             <div
               class="flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm"
             >
-              <button
-                @click="openChat(ex)"
-                class="p-1.5 rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
-              >
-                <PhChatCircle :size="16" weight="bold" />
-              </button>
               <div class="w-px h-3 bg-slate-200 mx-0.5"></div>
               <button
                 @click="openModal(ex)"
@@ -203,6 +197,7 @@ import DOMPurify from 'dompurify'
 import ExerciseModal from '@/components/ExerciseModal.vue'
 import ResultModal from '@/components/ResultModal.vue'
 import { useQuizStore } from '@/stores/quiz.store'
+import { useChatStore } from '@/stores/chat.store'
 
 // --- 常量定义 ---
 const TYPE_MAP: Record<string, { label: string; class: string }> = {
@@ -216,6 +211,7 @@ const TYPE_MAP: Record<string, { label: string; class: string }> = {
 const route = useRoute()
 const router = useRouter()
 const quizStore = useQuizStore()
+const chatStore = useChatStore()
 const { exercises, loading, currentNodeId } = storeToRefs(quizStore)
 
 const showModal = ref(false)
@@ -250,11 +246,6 @@ const renderMarkdown = (content: string) => {
 const openModal = (ex: any = null) => {
   editingExercise.value = ex ? JSON.parse(JSON.stringify(ex)) : null
   showModal.value = true
-}
-
-const openChat = (ex: any = null) => {
-  console.log('openChat', ex)
-  // 生成题目逻辑
 }
 
 const closeModal = () => {
@@ -306,6 +297,9 @@ const handleModalSubmit = async (formData: any) => {
     // 5. 操作成功后的清理逻辑
     closeModal() // 成功后立即关闭习题模态框
     showFeedback('success', '操作成功', isEdit ? '习题已更新' : '习题已创建')
+
+    // 6. 重新加载数据以确保界面同步更新
+    loadData()
   } catch (error) {
     showFeedback('error', '操作失败', '服务器连接错误，请检查网络后再试')
   }
@@ -317,6 +311,8 @@ const handleDelete = async (id: number) => {
   try {
     await quizStore.deleteExercise(id)
     showFeedback('success', '删除成功', '该题目已从题库移除')
+    // 重新加载数据以确保界面同步更新
+    loadData()
   } catch (error) {
     showFeedback('error', '删除失败', '无法删除该习题')
   }

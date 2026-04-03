@@ -334,26 +334,41 @@ export const useChatStore = defineStore('chat', {
       await this.loadMessages(true)
     },
 
-    // 启动分析模式
-    async startAnalysisMode(nodeId: number,modes: 'analysis' | 'summary') {
+    /**
+     * 启动分析或者生成模式
+     */
+    async startAnalysisOrGenerateMode(nodeId: number, modes: 'analysis' | 'summary' | 'generate', exerciseType?: 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK', userPrompt?: string) {
       // 重置当前对话状态
       this.resetConversation()
 
       try {
         // 调用后端分析接口，传入分析数据和模式参数
         const token = getToken()
+        const requestBody: any = {
+          mode: modes, // 指定分析模式或者总结模式
+          nodeId: nodeId,
+          conversationId: null, // 分析模式不需要conversationId
+        }
+
+        if (modes === 'generate') {
+          // generate模式需要额外的参数
+          if (exerciseType) {
+            requestBody.exerciseType = exerciseType
+          }
+          if (userPrompt) {
+            requestBody.userPrompt = userPrompt
+          }
+        } else {
+          requestBody.userInput = '' // 分析模式不需要用户输入
+        }
+
         const response = await fetch('/api/v1/chat/send', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
-          body: JSON.stringify({
-            mode: modes, // 指定分析模式或者总结模式
-            nodeId: nodeId,
-            conversationId: null, // 分析模式不需要conversationId
-            userInput: '' // 分析模式不需要用户输入
-          }),
+          body: JSON.stringify(requestBody),
         })
 
         if (!response.body) throw new Error('No response body')
@@ -361,7 +376,7 @@ export const useChatStore = defineStore('chat', {
         // 创建助手占位消息
         const assistantMessage: ChatMessage = {
           role: 'assistant',
-          content: '正在生成分析报告...',
+          content: modes === 'generate' ? '正在生成题目...' : '正在生成分析报告...',
           streaming: true,
           pending: true,
           createdAt: new Date().toLocaleTimeString(),
@@ -384,7 +399,7 @@ export const useChatStore = defineStore('chat', {
         // 添加错误消息
         this.messages.push({
           role: 'assistant',
-          content: '生成分析报告时出现错误，请稍后重试。',
+          content: modes === 'generate' ? '生成题目时出现错误，请稍后重试。' : '生成分析报告时出现错误，请稍后重试。',
           createdAt: new Date().toLocaleTimeString(),
         })
       }

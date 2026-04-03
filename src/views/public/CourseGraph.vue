@@ -61,17 +61,17 @@
             <div
               class="flex items-center gap-2 text-slate-600 bg-slate-50 px-2 py-1.5 rounded border border-slate-100"
             >
-              <span class="w-2 h-2 rounded-full bg-blue-500"></span> 模块
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span> 章节
             </div>
             <div
               class="flex items-center gap-2 text-slate-600 bg-slate-50 px-2 py-1.5 rounded border border-slate-100"
             >
-              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 考点
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> 知识小节
             </div>
             <div
               class="flex items-center gap-2 text-slate-600 bg-slate-50 px-2 py-1.5 rounded border border-slate-100"
             >
-              <span class="w-2 h-2 rounded-full bg-violet-500"></span> PDF/PPT
+              <span class="w-2 h-2 rounded-full bg-violet-500"></span> 知识点
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ const colorScale = d3
 
 // 获取节点类型的文本描述
 const getNodeTypeName = (level) => {
-  const map = { 1: '核心课程', 2: '知识模块', 3: '细分考点', 4: '教学资源' }
+  const map = { 1: '课程', 2: '章节', 3: '知识小节', 4: '知识点' }
   return map[level] || '节点'
 }
 
