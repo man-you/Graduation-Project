@@ -371,9 +371,7 @@ const startAIGeneration = async () => {
         },
         { deep: true },
       )
-      chatStore
-        .startAnalysisOrGenerateMode(nodeId, 'generate', currentType, userPrompt)
-        .catch(reject)
+      chatStore.startMixedMode(nodeId, 'generate', currentType, userPrompt).catch(reject)
     })
 
     const lastMessage = await generatePromise

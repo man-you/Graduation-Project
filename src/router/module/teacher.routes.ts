@@ -46,6 +46,18 @@ export const teacherChildrenRoutes: RouteRecordRaw[] = [
     component: () => import('@/views/public/ChatAgent.vue'),
     meta: { roles: ['teacher'], title: 'AI 助手' },
   },
+    {
+    path: 'template/ppt',
+    name: 'TemplatePPT',
+    component: () => import('@/views/teacher/PPTList.vue'),
+    meta: { roles: ['teacher'], title: 'PPT模板' },
+  },
+      {
+    path: 'template/ppt/:templateId',
+    name: 'PPT',
+    component: () => import('@/views/teacher/GeneratePPT.vue'),
+    meta: { roles: ['teacher'], title: 'PPT生成' },
+  },
   {
     path: 'settings',
     name: 'TeacherSettings',

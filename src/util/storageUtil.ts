@@ -1,9 +1,9 @@
-/* 
-    存储工具函数 
+/*
+    存储工具函数
 */
 
 /*
-    浏览器长期存储相关函数 
+    浏览器长期存储相关函数
  */
 
 // 设置浏览器长期存储
@@ -53,7 +53,7 @@ export const clearLocalStorage = () => {
   }
 }
 
-/* 
+/*
     会话存储相关函数
  */
 
@@ -99,5 +99,37 @@ export const clearSessionStorage = () => {
     sessionStorage.clear()
   } catch (err) {
     console.error('清除 sessionStorage 失败:', err)
+  }
+}
+
+/*
+    PPT生成SID相关存储函数
+*/
+
+// 存储PPT生成SID到localStorage
+export const setPPTSID = (sid: string) => {
+  try {
+    localStorage.setItem('pptSid', sid)
+  } catch (error) {
+    console.error('存储PPT生成SID失败:', error)
+  }
+}
+
+// 获取PPT生成SID从localStorage
+export const getPPTSID = (): string | null => {
+  try {
+    return localStorage.getItem('pptSid')
+  } catch (error) {
+    console.error('获取PPT生成SID失败:', error)
+    return null
+  }
+}
+
+// 移除PPT生成SID从localStorage
+export const removePPTSID = () => {
+  try {
+    localStorage.removeItem('pptSid')
+  } catch (error) {
+    console.error('移除PPT生成SID失败:', error)
   }
 }

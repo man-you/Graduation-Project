@@ -1,4 +1,4 @@
-import { PhFolder,PhChat, PhBooks, PhGear, PhUsers } from '@phosphor-icons/vue'
+import { PhFolder,PhChat, PhBooks, PhGear, PhUsers, PhBookOpen  } from '@phosphor-icons/vue'
 
 export interface MenuItem {
   id: number
@@ -66,6 +66,18 @@ export const menuList: MenuItem[] = [
   },
   {
     id: 5,
+    title: 'PPT生成',
+    icon: PhBookOpen ,
+    weight: 'regular',
+    isActive: true,
+    path: '/ppt',
+    roles: ['teacher'],
+    pathMap: {
+      teacher: '/teacher/template/ppt',
+    },
+  },
+  {
+    id: 6,
     title: '设置',
     icon: PhGear,
     weight: 'regular',
@@ -78,4 +90,5 @@ export const menuList: MenuItem[] = [
       admin: '/admin/settings',
     },
   },
+
 ]

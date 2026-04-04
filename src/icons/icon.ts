@@ -62,11 +62,23 @@ import {
   PhFiles,
   PhPencilSimple,
   PhKeyhole,
-  PhKey
+  PhKey,
+  PhArrowClockwise,
+  PhWarningCircle,
+  PhMagicWand,
+  PhLightning,
+  PhArrowUpRight,
+  PhSlideshow,
+  PhSelectionAll,
+  PhPresentationChart,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
 export const icons = {
+  PhSelectionAll,
+  PhPresentationChart,
+  PhSlideshow,
+  PhArrowUpRight,
    PhPencilSimpleLine,
   PhClockCounterClockwise,
   PhEnvelopeSimple,
@@ -130,4 +142,8 @@ export const icons = {
   PhPencilSimple,
   PhKeyhole,
   PhKey,
+  PhArrowClockwise,
+  PhWarningCircle,
+  PhMagicWand,
+  PhLightning,
 }

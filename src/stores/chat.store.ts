@@ -337,7 +337,7 @@ export const useChatStore = defineStore('chat', {
     /**
      * 启动分析或者生成模式
      */
-    async startAnalysisOrGenerateMode(nodeId: number, modes: 'analysis' | 'summary' | 'generate', exerciseType?: 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK', userPrompt?: string) {
+    async startMixedMode(nodeId: number, modes: 'analysis' | 'summary' | 'generate', exerciseType?: 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK', userPrompt?: string) {
       // 重置当前对话状态
       this.resetConversation()
 

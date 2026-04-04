@@ -225,7 +225,7 @@ import { formatMarkdownContent, injectMarkdownStyles } from '@/util/markdownUtil
 // 定义props
 const props = defineProps({
   mode: {
-    type: String as () => 'chat' | 'analysis' | 'summary',
+    type: String as () => 'chat' | 'analysis' | 'summary' | 'generate',
     default: 'chat',
   },
   nodeId: {
@@ -328,7 +328,7 @@ const handleHistoryScroll = (e: Event) => {
 const initAnalysisMode = async () => {
   if (props.mode === 'analysis' && props.nodeId) {
     // 调用分析模式的特殊方法
-    await chatStore.startAnalysisMode(props.nodeId, 'analysis')
+    await chatStore.startMixedMode(props.nodeId, 'analysis')
   }
 }
 
@@ -336,7 +336,7 @@ const initAnalysisMode = async () => {
 const initSummaryMode = async () => {
   if (props.mode === 'summary' && props.nodeId) {
     // 调用总结模式的特殊方法
-    await chatStore.startAnalysisMode(props.nodeId, 'summary')
+    await chatStore.startMixedMode(props.nodeId, 'summary')
   }
 }
 
