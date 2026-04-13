@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import type { ChatMessage, Pagination } from '../types/chat/chat.type'
+import type { ChatMessage, Pagination } from '../types/chat.type'
 import { getToken } from '../util/authUtil'
 import {
   getMessageListApi,
   getConversationListApi,
   deleteConversationApi,
-} from '../api/chat/chat.api'
+} from '../api/chat.api'
 
 interface ChatState {
   conversationId: number | null
@@ -45,6 +45,7 @@ export const useChatStore = defineStore('chat', {
   }),
 
   actions: {
+    // 基础操作方法
     resetConversation() {
       this.conversationId = null
       this.messages = []
@@ -54,79 +55,8 @@ export const useChatStore = defineStore('chat', {
       this.abortController = null
     },
 
-    async sendMessage(prompt: string) {
-      if (this.loading) return
 
-      this.loading = true
-      this.sseBuffer = ''
-
-      // 1. 推入用户消息
-      this.messages.push({
-        role: 'user',
-        content: prompt,
-        createdAt: new Date().toLocaleTimeString(),
-      })
-
-      // 2. 推入助手占位消息
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: '思考中...',
-        streaming: true,
-        pending: true,
-        createdAt: new Date().toLocaleTimeString(),
-      }
-      this.messages.push(assistantMessage)
-
-      // 获取当前助手的索引，方便后续精确修改
-      const assistantIndex = this.messages.length - 1
-
-      this.abortController?.abort()
-      this.abortController = new AbortController()
-
-      try {
-        const token = getToken()
-        const response = await fetch('/api/v1/chat/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            conversationId: this.conversationId,
-            userInput: prompt,
-          }),
-          signal: this.abortController.signal,
-        })
-
-        if (!response.body) throw new Error('No response body')
-
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder()
-
-        while (true) {
-          const { value, done } = await reader.read()
-          if (done) break
-
-          const chunk = decoder.decode(value, { stream: true })
-          this.consumeChunk(chunk, assistantIndex)
-        }
-      } catch (err) {
-        console.error('[ChatStore] Error:', err)
-        const msg = this.messages[assistantIndex]
-        if (msg) {
-          msg.content = '请求失败: ' + (err as Error).message
-        }
-      } finally {
-        const msg = this.messages[assistantIndex]
-        if (msg) {
-          msg.streaming = false
-          msg.pending = false
-        }
-        this.loading = false
-        this.abortController = null
-      }
-    },
-
+    // SSE 相关处理方法
     consumeChunk(chunk: string, index: number) {
       this.sseBuffer += chunk
       const events = this.sseBuffer.split('\n\n')
@@ -185,10 +115,165 @@ export const useChatStore = defineStore('chat', {
       }
     },
 
+    // 消息发送与处理方法
+    async sendMessage(prompt: string, nodeId?: number) {
+      if (this.loading) return
+
+      this.loading = true
+      this.sseBuffer = ''
+
+      // 1. 推入用户消息
+      this.messages.push({
+        role: 'user',
+        content: prompt,
+        createdAt: new Date().toLocaleTimeString(),
+      })
+
+      // 2. 推入助手占位消息
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: '思考中...',
+        streaming: true,
+        pending: true,
+        createdAt: new Date().toLocaleTimeString(),
+      }
+      this.messages.push(assistantMessage)
+
+      // 获取当前助手的索引，方便后续精确修改
+      const assistantIndex = this.messages.length - 1
+
+      this.abortController?.abort()
+      this.abortController = new AbortController()
+
+      try {
+        const token = getToken()
+        const response = await fetch('/api/v1/chat/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({
+            conversationId: this.conversationId,
+            userInput: prompt,
+            nodeId: nodeId,
+            mode: 'chat',
+          }),
+          signal: this.abortController.signal,
+        })
+
+        if (!response.body) throw new Error('No response body')
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          this.consumeChunk(chunk, assistantIndex)
+        }
+      } catch (err) {
+        console.error('[ChatStore] Error:', err)
+        const msg = this.messages[assistantIndex]
+        if (msg) {
+          msg.content = '请求失败: ' + (err as Error).message
+        }
+      } finally {
+        const msg = this.messages[assistantIndex]
+        if (msg) {
+          msg.streaming = false
+          msg.pending = false
+        }
+        this.loading = false
+        this.abortController = null
+      }
+    },
+
+    // 分析/生成模式方法
     /**
-     * 加载对话与消息列表
-     * @param id
+     * 启动分析或者生成模式
      */
+    async startMixedMode(nodeId: number, modes: 'analysis' | 'summary' | 'generate', exerciseType?: 'SINGLE_CHOICE' | 'TRUE_FALSE' | 'FILL_BLANK', userPrompt?: string) {
+      // 重置当前对话状态
+      this.resetConversation()
+
+      try {
+        // 调用后端分析接口，传入分析数据和模式参数
+        const token = getToken()
+        const requestBody: any = {
+          mode: modes, // 指定分析模式或者总结模式
+          nodeId: nodeId,
+          conversationId: null, // 分析模式不需要conversationId
+        }
+
+        if (modes === 'generate') {
+          // generate模式需要额外的参数
+          if (exerciseType) {
+            requestBody.exerciseType = exerciseType
+          }
+          if (userPrompt) {
+            requestBody.userPrompt = userPrompt
+          }
+        } else {
+          requestBody.userInput = '' // 分析模式不需要用户输入
+        }
+
+        const response = await fetch('/api/v1/chat/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify(requestBody),
+        })
+
+        if (!response.body) throw new Error('No response body')
+
+        // 创建助手占位消息
+        const assistantMessage: ChatMessage = {
+          role: 'assistant',
+          content: modes === 'generate' ? '正在生成题目...' : '正在生成分析报告...',
+          streaming: true,
+          pending: true,
+          createdAt: new Date().toLocaleTimeString(),
+        }
+        this.messages.push(assistantMessage)
+        const assistantIndex = this.messages.length - 1
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+
+        while (true) {
+          const { value, done } = await reader.read()
+          if (done) break
+
+          const chunk = decoder.decode(value, { stream: true })
+          this.consumeChunk(chunk, assistantIndex)
+        }
+      } catch (err) {
+        console.error('[ChatStore] Analysis error:', err)
+        // 添加错误消息
+        this.messages.push({
+          role: 'assistant',
+          content: modes === 'generate' ? '生成题目时出现错误，请稍后重试。' : '生成分析报告时出现错误，请稍后重试。',
+          createdAt: new Date().toLocaleTimeString(),
+        })
+      }
+    },
+
+    // 清理分析模式数据
+    clearAnalysisData() {
+      // 只有在非聊天模式（即分析模式或者总结模式）下才清理数据
+      if (this.conversationId === null && this.messages.length > 0) {
+        this.messages = []
+        this.loading = false
+        this.sseBuffer = ''
+        this.abortController?.abort()
+        this.abortController = null
+      }
+    },
 
     // --- 会话逻辑 (Conversations) 逻辑 ---
 
@@ -266,6 +351,7 @@ export const useChatStore = defineStore('chat', {
         throw err // 抛出错误让 UI 层捕获并弹窗提醒
       }
     },
+
     // 对话翻页
     async loadNextHistoryPage() {
       if (!this.historyPagination.hasMore || this.historyLoading) return
@@ -332,74 +418,6 @@ export const useChatStore = defineStore('chat', {
       if (!this.pagination.hasMore || this.loading) return
       this.pagination.pageNum++
       await this.loadMessages(true)
-    },
-
-    // 启动分析模式
-    async startAnalysisMode(nodeId: number,modes: 'analysis' | 'summary') {
-      // 重置当前对话状态
-      this.resetConversation()
-      
-      try {
-        // 调用后端分析接口，传入分析数据和模式参数
-        const token = getToken()
-        const response = await fetch('/api/v1/chat/send', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({
-            mode: modes, // 指定分析模式或者总结模式
-            nodeId: nodeId,
-            conversationId: null, // 分析模式不需要conversationId
-            userInput: '' // 分析模式不需要用户输入
-          }),
-        })
-
-        if (!response.body) throw new Error('No response body')
-
-        // 创建助手占位消息
-        const assistantMessage: ChatMessage = {
-          role: 'assistant',
-          content: '正在生成分析报告...',
-          streaming: true,
-          pending: true,
-          createdAt: new Date().toLocaleTimeString(),
-        }
-        this.messages.push(assistantMessage)
-        const assistantIndex = this.messages.length - 1
-
-        const reader = response.body.getReader()
-        const decoder = new TextDecoder()
-
-        while (true) {
-          const { value, done } = await reader.read()
-          if (done) break
-
-          const chunk = decoder.decode(value, { stream: true })
-          this.consumeChunk(chunk, assistantIndex)
-        }
-      } catch (err) {
-        console.error('[ChatStore] Analysis error:', err)
-        // 添加错误消息
-        this.messages.push({
-          role: 'assistant',
-          content: '生成分析报告时出现错误，请稍后重试。',
-          createdAt: new Date().toLocaleTimeString(),
-        })
-      }
-    },
-
-    // 清理分析模式数据
-    clearAnalysisData() {
-      // 只有在非聊天模式（即分析模式或者总结模式）下才清理数据
-      if (this.conversationId === null && this.messages.length > 0) {
-        this.messages = []
-        this.loading = false
-        this.sseBuffer = ''
-        this.abortController?.abort()
-        this.abortController = null
-      }
     },
   },
 })

@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
-import type { AdminUser,  CreateUserRequest, UpdateUserRequest } from '@/types/admin/adminUser.type'
+import type { AdminUser,  CreateUserRequest, UpdateUserRequest } from '@/types/adminUser.type'
 import {
   getUserListApi,
   createUserApi,
   updateUserApi,
-  deleteUserApi
-} from '@/api/admin/admin.api'
+  deleteUserApi,
+  searchUserApi
+} from '@/api/admin.api'
 
 export const useAdminStore = defineStore('admin', {
   state: () => ({
@@ -96,11 +97,14 @@ export const useAdminStore = defineStore('admin', {
     /**
      * 搜索用户
      */
-    async searchUsers(query: string) {
-      this.searchQuery = query
-      // 这里可以根据实际API支持添加搜索功能
-      // 目前先刷新列表
-      await this.getUserList(1)
+    async searchUsers(keyword: string) {
+      try {
+        const res = await searchUserApi(keyword)
+        this.users = res.users
+        this.pagination.total = res.total
+      } catch (error) {
+        console.error('搜索用户失败:', error)
+      }
     }
   }
 })

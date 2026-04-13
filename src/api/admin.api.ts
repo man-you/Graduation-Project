@@ -1,5 +1,5 @@
 import request from '@/request'
-import type { AdminUser, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/admin/adminUser.type'
+import type { AdminUser, PaginatedUsersResponse,CreateUserRequest,UpdateUserRequest } from '@/types/adminUser.type'
 
 export const getUserListApi = (params: {
   pageNum?: number
@@ -57,5 +57,20 @@ export const deleteUserApi = (id: string): Promise<void> => {
   return request({
     url: `/api/v1/admin/users/${id}`,
     method: 'delete',
+  })
+}
+
+/**
+ * 搜索用户
+ */
+export const searchUserApi = (keyword: string, pageNum: number = 1, pageSize: number = 20):Promise<PaginatedUsersResponse> => {
+  return request({
+    url: '/api/v1/admin/search/users',
+    method: 'get',
+    params: {
+      keyword,
+      pageNum,
+      pageSize,
+    },
   })
 }

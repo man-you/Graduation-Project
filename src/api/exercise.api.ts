@@ -1,12 +1,12 @@
 import request from '@/request'
-import type { Exercise, SubmitQuizPayload, SubmitResult } from '@/types/course/exercise.type'
+import type { Exercise, SubmitQuizPayload, SubmitResult } from '@/types/exercise.type'
 
 /**
  * 获取指定节点的习题列表
  */
 export const getExercisesByNodeIdApi = (nodeId: number): Promise<Exercise[]> => {
   return request({
-    url: `/api/v1/quiz/${nodeId}`,
+    url: `/api/v1/quiz/exercises/${nodeId}`,
     method: 'get',
   })
 }

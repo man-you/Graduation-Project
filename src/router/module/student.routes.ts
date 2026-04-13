@@ -4,7 +4,7 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
   {
     path: 'courses',
     name: 'StudentCourses',
-    component: () => import('@/views/student/CourseList.vue'),
+    component: () => import('@/views/public/CourseList.vue'),
     meta: { roles: ['student'] },
   },
   {
@@ -32,7 +32,7 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
     meta: { roles: ['student'] },
   },
   {
-    path: 'course/graphs',
+    path: 'course/graphs/:id',
     name: 'StudentKnowledges',
     component: () => import('@/views/public/CourseGraph.vue'),
     meta: { roles: ['student'] },
@@ -47,7 +47,8 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
     path: 'assistant',
     name: 'StudentChat',
     component: () => import('@/views/public/ChatAgent.vue'),
-    meta: { roles: ['student'] },
+    meta: { roles: ['student'] }
+
   },
   {
     path: 'settings',

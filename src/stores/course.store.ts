@@ -1,151 +1,146 @@
 import { defineStore } from 'pinia'
-import type { Course, CourseNode } from '@/types/course/course.type'
-import { 
-  getCourseListApi, 
-  getCourseKnowledgeGraphApi, 
-  getCouseNodesApi // 确保 API 已导入
-} from '@/api/course/course.api'
+import type { Course, CourseNode } from '@/types/course.type'
+import {
+  getCourseListApi,
+  getCourseKnowledgeGraphApi,
+  getCouseNodesApi,
+  deleteCourseApi
+} from '@/api/course.api'
+
+interface GraphData {
+  nodes: any[]
+  links: any[]
+}
 
 export const useCourseStore = defineStore('course', {
   state: () => ({
-    // 课程列表
+    // 基础数据
     courseList: [] as Course[],
-    
-    // 用于图谱可视化的扁平化数据
-    graphData: {
-      nodes: [] as any[],
-      links: [] as any[]
-    },
-    
-    // 基础节点数据状态
     CourseNodes: [] as CourseNode[],
     CourseId: null as null | number,
-    
-    // UI 状态
+
+    // 图谱可视化扁平数据
+    graphData: { nodes: [], links: [] } as GraphData,
     currentCourseId: null as null | number,
+
+    // 状态控制
     loading: false,
     nodesLoading: false,
-    
-    // 智能缓存：按课程ID缓存完整课程数据
+
+    // 缓存管理：Map<ID, {数据, 时间戳}>
     courseDataCache: new Map<number, { data: CourseNode[], timestamp: number }>(),
-    CACHE_DURATION: 5 * 60 * 1000, // 5分钟缓存有效期
+    CACHE_DURATION: 5 * 60 * 1000, // 5分钟有效期
   }),
 
   actions: {
     /**
-     * 课程列表获取
+     * 获取课程列表
+     * @param force 是否强制刷新
      */
-    async getCourseList() {
-      if (this.courseList.length > 0) return
+    async getCourseList(force = false) {
+      if (!force && this.courseList.length > 0) return
+
       this.loading = true
+      // 强制刷新时清空关联状态，确保数据一致性
+      if (force) this.resetAllState()
+
       try {
         const res = await getCourseListApi()
-        this.courseList = res.map((course: Course) => ({
-          ...course,
-          progress: this.calcProgress(course.duration, course.estimatedDuration),
+        this.courseList = res.map((c: Course) => ({
+          ...c,
+          progress: this.calcProgress(c.duration, c.estimatedDuration),
         }))
       } catch (error) {
-        console.error('获取课程失败:', error)
+        console.error('[CourseStore] 获取列表失败:', error)
+        if (force) this.courseList = []
+        throw error
       } finally {
         this.loading = false
       }
     },
 
     /**
-     * 获取当前课程的所有节点 
-     * @param courseId 课程 ID
-     * @param forceFetch 是否强制刷新
+     * 获取课程节点（带智能缓存控制）
      */
-    async getCourseNodes(courseId: number, forceFetch = false) {
-      const now = Date.now();
-      
-      // 检查缓存是否有效
-      if (!forceFetch && this.courseDataCache.has(courseId)) {
-        const cached = this.courseDataCache.get(courseId)!;
-        if (now - cached.timestamp < this.CACHE_DURATION) {
-          // 使用缓存数据
-          this.CourseNodes = cached.data;
-          this.CourseId = courseId;
-          return;
-        }
-      }
-      
-      // 如果课程Id不变且已有数据（且未过期），则不重复请求
-      if (!forceFetch && this.CourseId === courseId && this.CourseNodes.length > 0) {
-        // 更新缓存时间戳
-        this.courseDataCache.set(courseId, { 
-          data: [...this.CourseNodes], 
-          timestamp: now 
-        });
-        return;
+    async getCourseNodes(courseId: number, force = false) {
+      const now = Date.now()
+      const cached = this.courseDataCache.get(courseId)
+
+      // 1. 命中有效缓存逻辑
+      if (!force && cached && (now - cached.timestamp < this.CACHE_DURATION)) {
+        this.CourseNodes = cached.data
+        this.CourseId = courseId
+        return
       }
 
+      // 2. 发起网络请求
       this.nodesLoading = true
       try {
         const res = await getCouseNodesApi(courseId)
-        console.log('获取到的课程数据为:', res)
+
+        // 更新状态与缓存
         this.CourseNodes = res
-        this.CourseId = courseId // 同步当前缓存的 ID
-        
-        // 更新缓存
-        this.courseDataCache.set(courseId, { 
-          data: [...res], 
-          timestamp: now 
-        });
+        this.CourseId = courseId
+        this.courseDataCache.set(courseId, { data: [...res], timestamp: now })
       } catch (error) {
-        console.error(`获取课程 ID 为 ${courseId} 的节点失败:`, error)
-        this.CourseNodes = [] // 出错时清空，防止渲染错误数据
+        console.error(`[CourseStore] 获取节点失败(ID:${courseId}):`, error)
+        this.CourseNodes = []
       } finally {
         this.nodesLoading = false
       }
     },
 
     /**
-     * 获取并处理图谱数据 (用于可视化界面)
+     * 获取图谱数据并扁平化处理
      */
     async getGraphData(courseId: number | string) {
-      const id = Number(courseId);
-      
-      // 确保完整的课程数据已经加载（利用缓存机制）
-      await this.getCourseNodes(id);
-      
+      const id = Number(courseId)
+
+      // 先确保节点基础数据已存在（利用 getCourseNodes 的缓存机制）
+      await this.getCourseNodes(id)
+
       this.nodesLoading = true
       try {
-        const res = await getCourseKnowledgeGraphApi(id)        
+        const res = await getCourseKnowledgeGraphApi(id)
         const rootNode = res[0]
+
         if (rootNode) {
-          this.processGraphData(rootNode)
+          this.processGraphFlattening(rootNode)
           this.currentCourseId = id
         }
       } catch (error) {
-        console.error('获取图谱数据失败:', error)
+        console.error('[CourseStore] 图谱数据处理失败:', error)
       } finally {
         this.nodesLoading = false
       }
     },
 
     /**
-     * 嵌套树转 D3 扁平数据
+     * 核心逻辑：递归将嵌套树转为 D3/G6 所需的扁平化结构
      */
-    processGraphData(root: CourseNode) {
+    processGraphFlattening(root: CourseNode) {
       const nodes: any[] = []
       const links: any[] = []
 
       const traverse = (node: CourseNode) => {
-        const levelNum = parseInt(node.nodeLevel?.replace('LEVEL', '') || '1')
-        const newNode = {
+        const level = parseInt(node.nodeLevel?.replace('LEVEL', '') || '1')
+
+        // 资源预处理：仅 LEVEL4 需要提取首个资源对象
+        let processedResource = node.resource
+        if (level === 4 && Array.isArray(node.resource)) {
+          processedResource = node.resource[0] || null
+        }
+
+        nodes.push({
           ...node,
           name: node.nodeName,
-          level: levelNum,
-        }
-        nodes.push(newNode)
+          level,
+          resource: processedResource
+        })
 
-        if (node.childNodes && node.childNodes.length > 0) {
+        if (node.childNodes?.length) {
           node.childNodes.forEach(child => {
-            links.push({
-              source: node.id,
-              target: child.id
-            })
+            links.push({ source: node.id, target: child.id })
             traverse(child)
           })
         }
@@ -156,11 +151,45 @@ export const useCourseStore = defineStore('course', {
     },
 
     /**
-     * 进度计算工具
+     * 删除课程及其关联缓存
      */
-    calcProgress(cur: number | undefined, total: number | undefined): number {
-      if (!total || total <= 0 || !cur) return 0
+    async deleteCourse(courseId: number) {
+      try {
+        await deleteCourseApi(courseId)
+
+        // 1. 同步课程列表
+        this.courseList = this.courseList.filter(c => c.id !== courseId)
+
+        // 2. 清理缓存 Map
+        this.courseDataCache.delete(courseId)
+
+        // 3. 如果删除的是当前查看的课程，重置明细状态
+        if (this.CourseId === courseId || this.currentCourseId === courseId) {
+          this.resetDetailState()
+        }
+      } catch (error) {
+        console.error('[CourseStore] 删除课程失败:', error)
+        throw error
+      }
+    },
+
+    // --- 辅助工具方法 ---
+
+    calcProgress(cur = 0, total = 0): number {
+      if (!total || total <= 0) return 0
       return Math.min(100, Math.round((cur / total) * 100))
+    },
+
+    resetDetailState() {
+      this.CourseNodes = []
+      this.CourseId = null
+      this.currentCourseId = null
+      this.graphData = { nodes: [], links: [] }
+    },
+
+    resetAllState() {
+      this.courseList = []
+      this.resetDetailState()
     }
   }
 })

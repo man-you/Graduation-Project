@@ -196,9 +196,10 @@
 
           <div class="flex items-center justify-between px-3 pb-2">
             <button
-              class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-full transition-all"
+              class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-500/10 rounded-lg transition-all"
+              title="更多选项"
             >
-              <PhPlus size="20" />
+              <PhPlus size="20" weight="duotone" />
             </button>
             <button
               @click="handleSend"
@@ -216,16 +217,17 @@
 
 <script setup lang="ts">
 import { ref, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { PhSparkle, PhUser } from '@phosphor-icons/vue'
+import { PhSparkle, PhUser, PhPlus } from '@phosphor-icons/vue'
 import { useChatStore } from '@/stores/chat.store'
 import { useAuthStore } from '@/stores/auth.store'
 import { formatMarkdownContent, injectMarkdownStyles } from '@/util/markdownUtil'
 
-// 定义props
+// --- Props ,分析模式和总结模式 ---
 const props = defineProps({
   mode: {
-    type: String as () => 'chat' | 'analysis' | 'summary',
+    type: String as () => 'chat' | 'analysis' | 'summary' | 'generate',
     default: 'chat',
   },
   nodeId: {
@@ -234,19 +236,24 @@ const props = defineProps({
   },
 })
 
+// --- Store 和状态管理 ---
 const chatStore = useChatStore()
 const userStore = useAuthStore()
+const route = useRoute()
 
 const { userInfo } = storeToRefs(userStore)
 const { messages, loading } = storeToRefs(chatStore)
 
 const input = ref('')
+
+// 从课程学习界面中利用query获取节点ID
+const nodeId = route.query.nodeId ? Number(route.query.nodeId) : undefined
+
 const showHistory = ref(props.mode === 'chat') // 分析模式下默认隐藏历史
 const scrollContainer = ref<HTMLElement | null>(null)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
 // --- 界面控制逻辑 ---
-
 const scrollToBottom = () => {
   nextTick(() => {
     if (scrollContainer.value) {
@@ -263,30 +270,17 @@ const adjustHeight = () => {
   }
 }
 
-watch(
-  () => messages.value,
-  (newMsgs, oldMsgs) => {
-    // 仅在发送新消息或流式输出时自动触底
-    if (newMsgs.length > 0 && oldMsgs.length > 0 && newMsgs[0]?.id === oldMsgs[0]?.id) {
-      scrollToBottom()
-    } else if (oldMsgs.length === 0) {
-      scrollToBottom()
-    }
-  },
-  { deep: true },
-)
-
-// --- 核心业务逻辑 ---
-
+// --- 消息处理逻辑 ---
 const handleSend = () => {
   const text = input.value.trim()
   if (!text || loading.value) return
   input.value = ''
   if (textareaRef.value) textareaRef.value.style.height = 'auto'
-  chatStore.sendMessage(text)
+  chatStore.sendMessage(text, nodeId)
   scrollToBottom()
 }
 
+// --- 历史对话处理逻辑 ---
 const handleSelectChat = async (id: number) => {
   if (chatStore.conversationId === id) return
   await chatStore.loadConversation(id)
@@ -301,6 +295,7 @@ const handleDelete = async (id: number) => {
   }
 }
 
+// --- 滚动事件处理 ---
 const handleMessageScroll = async (e: Event) => {
   const el = e.target as HTMLElement
   if (
@@ -324,23 +319,22 @@ const handleHistoryScroll = (e: Event) => {
   }
 }
 
-// 分析模式初始化
+// --- 模式初始化逻辑 ---
 const initAnalysisMode = async () => {
   if (props.mode === 'analysis' && props.nodeId) {
     // 调用分析模式的特殊方法
-    await chatStore.startAnalysisMode(props.nodeId, 'analysis')
+    await chatStore.startMixedMode(props.nodeId, 'analysis')
   }
 }
 
-// 总结模式初始化
 const initSummaryMode = async () => {
   if (props.mode === 'summary' && props.nodeId) {
     // 调用总结模式的特殊方法
-    await chatStore.startAnalysisMode(props.nodeId, 'summary')
+    await chatStore.startMixedMode(props.nodeId, 'summary')
   }
 }
 
-// 注入Markdown样式
+// --- 生命周期钩子 ---
 onMounted(() => {
   // 为当前组件注入Markdown样式
   injectMarkdownStyles('chat-component')
@@ -360,7 +354,32 @@ onUnmounted(() => {
   if (styleElement) {
     styleElement.remove()
   }
+
+  //  停止请求并置空消息
+  if (props.mode === 'chat') {
+    // 聊天模式：resetConversation 会 abort 请求、重置 ID、清空 messages 数组
+    chatStore.resetConversation()
+  } else {
+    // 分析/总结/题目生成模式：调用清理方法，内部包含 abort 和清空消息
+    chatStore.clearAnalysisData()
+    // 确保非聊天模式下的 abort 彻底执行
+    chatStore.abortController?.abort()
+  }
 })
+
+// --- 响应式监听 ---
+watch(
+  () => messages.value,
+  (newMsgs, oldMsgs) => {
+    // 仅在发送新消息或流式输出时自动触底
+    if (newMsgs.length > 0 && oldMsgs.length > 0 && newMsgs[0]?.id === oldMsgs[0]?.id) {
+      scrollToBottom()
+    } else if (oldMsgs.length === 0) {
+      scrollToBottom()
+    }
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped>

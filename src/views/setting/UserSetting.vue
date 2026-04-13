@@ -127,7 +127,7 @@
                     <p
                       class="truncate text-sm font-semibold text-slate-600 dark:text-slate-300 mt-0.5"
                     >
-                      {{ form.grade }}级
+                      {{ form.grade }}
                     </p>
                   </div>
                 </div>
@@ -320,7 +320,7 @@ import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth.store'
 import ResultModal from '@/components/ResultModal.vue'
 import defaultAvatar from '@/assets/R.png'
-import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user/user.api'
+import { updateUserInfoApi, updateSafeInfoApi } from '@/api/user.api'
 import { validateSecurityForm } from '@/util/validateSecurityForm'
 import {
   PhUserFocus,

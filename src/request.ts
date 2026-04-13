@@ -10,7 +10,7 @@ const request = axios.create({
   // 根据运行环境行设置不同的 baseURL
   baseURL: import.meta.env.VITE_BASE_API,
   // 超时请求
-  timeout: 10000,
+  timeout: 60000,
 })
 
 // 请求拦截设置相应的token

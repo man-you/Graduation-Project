@@ -22,7 +22,7 @@
             <PhArrowLeft :size="18" weight="bold" />
           </button>
           <h1 class="font-bold text-slate-800 text-base">
-            {{ isSubmitted ? '测试结果' : '章节练习' }}
+            {{ isSubmitted ? '测试结果' : '知识点练习' }}
           </h1>
         </div>
 
@@ -410,7 +410,7 @@ const getExerciseTypeText = (t) =>
 
 <style scoped>
 .nav-btn {
-  @apply w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 
+  @apply w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500
          hover:bg-slate-50 hover:text-slate-800 transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
 }
 
