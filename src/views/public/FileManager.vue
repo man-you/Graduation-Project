@@ -331,7 +331,7 @@ const Tag = ({ isPublic }: { isPublic?: boolean }) => {
   return h(
     'span',
     {
-      class: `inline-flex px-2 py-1 rounded-full text-xs font-bold ${isPublic ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`,
+      class: `inline-flex px-2 py-1 rounded-full text-xs font-bold ${isPublic ? 'bg-red-100 text-red-600' : 'bg-blue-100 text-blue-600'}`,
     },
     isPublic ? '课程资源' : '个人资源',
   )

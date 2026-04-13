@@ -184,9 +184,13 @@
                 <div class="h-px bg-slate-100 flex-1"></div>
               </div>
               <h2
-                class="text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight"
+                class="text-3xl cursor-pointer lg:text-4xl font-black text-slate-900 tracking-tight leading-tight"
+                @click="navToChat"
               >
                 {{ currentNode.nodeName }}
+                <span class="inline-block ml-2 text-xs font-normal text-slate-400">
+                  点击开始知链答疑
+                </span>
               </h2>
             </header>
 
@@ -395,6 +399,10 @@ const navToGraph = () => {
 
 const navToQuiz = () => {
   router.push({ name: 'StudentCourseQuiz', params: { nodeId: currentNode.value?.id } })
+}
+
+const navToChat = () => {
+  router.push({ name: 'StudentChat', params: { nodeId: currentNode.value?.id } })
 }
 
 const goBack = () => routerBack()

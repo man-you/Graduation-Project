@@ -3,11 +3,11 @@ import DOMPurify from 'dompurify'
 
 // 配置 marked 选项
 marked.setOptions({
-  breaks: true, // 转换换行符
-  gfm: true     // 启用 GitHub flavored markdown（包含表格和任务列表支持）
+  breaks: true, // 核心：保留换行符，防止文字堆叠
+  gfm: true     // 支持 GitHub 表格、任务列表
 })
 
-// 配置 DOMPurify：增加了 AI 常用标签 (a, img, hr, sub, sup, details, summary)
+// 配置 DOMPurify：保持原有配置，增加对语义化标签的宽容度
 const purifyConfig = {
   ALLOWED_TAGS: [
     'p', 'br', 'strong', 'em', 'u', 's', 'code', 'pre', 'blockquote',
@@ -17,13 +17,12 @@ const purifyConfig = {
   ],
   ALLOWED_ATTR: [
     'class', 'style', 'align', 'colspan', 'rowspan', 'scope',
-    'href', 'target', 'rel', 'src', 'alt', 'title' // 允许链接和图片的必要属性
+    'href', 'target', 'rel', 'src', 'alt', 'title'
   ],
   FORBID_TAGS: ['script', 'style', 'link', 'meta', 'iframe', 'object', 'embed'],
   FORBID_ATTR: ['on*']
 }
 
-// 增加一个 DOMPurify 钩子，确保所有 AI 生成的链接都在新标签页打开，且防范安全风险
 DOMPurify.addHook('afterSanitizeAttributes', function (node) {
   if ('target' in node) {
     node.setAttribute('target', '_blank')
@@ -32,13 +31,21 @@ DOMPurify.addHook('afterSanitizeAttributes', function (node) {
 })
 
 /**
- * 将 Markdown 内容格式化为安全的 HTML
+ * 格式化逻辑优化：增强文本语义感
  */
 export const formatMarkdownContent = (content: string): string => {
   if (!content) return ''
-  
+
+  // 预处理：优化空格和特定标识符，增加阅读时的视觉引导
+  let enhanced = content
+    .replace(/^> (注意|警告|重点)：/gm, '> 💡 **$1**：')
+    .replace(/^> (建议|提示)：/gm, '> 🛠️ **$1**：')
+    .replace(/^> (结论|总结)：/gm, '> 🎯 **$1**：')
+    // 确保列表符号后有空格，防止解析失效
+    .replace(/^([\s]*[-*+])([^\s])/, '$1 $2')
+
   try {
-    const html = marked.parse(content)
+    const html = marked.parse(enhanced)
     return DOMPurify.sanitize(html as string, purifyConfig)
   } catch (error) {
     console.warn('Markdown parsing error:', error)
@@ -47,203 +54,164 @@ export const formatMarkdownContent = (content: string): string => {
 }
 
 /**
- * 获取Markdown内容的CSS样式字符串 (仿 GitHub / Notion 质感)
+ * 样式深度优化：重点解决“阅读压力”
  */
 export const getMarkdownStyles = (): string => {
   return `
     .markdown-content {
-      line-height: 1.7;
+      line-height: 1.8; /* 核心：行高从1.5提升至1.8，极大缓解长文阅读压力 */
       color: #334155;
       word-wrap: break-word;
-      font-size: 15px;
+      font-size: 15.5px;
+      letter-spacing: 0.02em; /* 微增字间距 */
     }
 
-    .dark .markdown-content {
-      color: #cbd5e1;
+    .dark .markdown-content { color: #cbd5e1; }
+
+    /* 段落间距：让“空格感”由内而外 */
+    .markdown-content p {
+      margin: 1.2rem 0;
+      white-space: pre-wrap; /* 保持原始空格感 */
     }
 
-    /* 标题统一样式 */
-    .markdown-content h1,
-    .markdown-content h2,
-    .markdown-content h3,
-    .markdown-content h4,
-    .markdown-content h5,
-    .markdown-content h6 {
-      margin-top: 1.5em;
-      margin-bottom: 0.8em;
-      font-weight: 600;
+    /* 标题美化：渐变侧边栏增强结构感 */
+    .markdown-content h1, .markdown-content h2, .markdown-content h3 {
+      margin-top: 2.2rem;
+      margin-bottom: 1.2rem;
+      font-weight: 700;
       color: #0f172a;
-      line-height: 1.3;
+      line-height: 1.4;
     }
 
-    .dark .markdown-content h1,
-    .dark .markdown-content h2,
-    .dark .markdown-content h3,
-    .dark .markdown-content h4,
-    .dark .markdown-content h5,
-    .dark .markdown-content h6 {
-      color: #f8fafc;
+    .markdown-content h2 {
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
     }
 
-    .markdown-content h1 { font-size: 1.6em; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3em; }
-    .markdown-content h2 { font-size: 1.4em; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.3em; }
-    .markdown-content h3 { font-size: 1.25em; }
-    
-    .dark .markdown-content h1,
-    .dark .markdown-content h2 { border-bottom-color: #334155; }
-
-    /* 段落与链接 */
-    .markdown-content p { margin: 1em 0; }
-    .markdown-content a { color: #2563eb; text-decoration: none; word-break: break-all; }
-    .markdown-content a:hover { text-decoration: underline; }
-    .dark .markdown-content a { color: #60a5fa; }
-
-    /* 分割线 */
-    .markdown-content hr {
-      height: 1px;
-      padding: 0;
-      margin: 2em 0;
-      background-color: #e2e8f0;
-      border: 0;
+    .markdown-content h2::before {
+      content: "";
+      width: 4px;
+      height: 1.3rem;
+      background: linear-gradient(to bottom, #6366f1, #a855f7);
+      margin-right: 10px;
+      border-radius: 10px;
     }
-    .dark .markdown-content hr { background-color: #334155; }
 
-    /* 列表优化 (支持多级嵌套) */
-    .markdown-content ul,
-    .markdown-content ol {
-      margin: 1em 0;
-      padding-left: 1.5em;
-    }
-    .markdown-content ul ul,
-    .markdown-content ol ol,
-    .markdown-content ul ol,
-    .markdown-content ol ul {
-      margin: 0.2em 0;
-    }
-    .markdown-content li { margin: 0.4em 0; }
-    /* 解决 AI 返回的列表项中包裹 p 标签导致间距过大的问题 */
-    .markdown-content li > p { margin: 0.2em 0; }
+    .dark .markdown-content h1, .dark .markdown-content h2 { color: #f1f5f9; }
 
-    /* 引用块 */
+    /* 引用块 (Blockquote)：卡片化处理 */
     .markdown-content blockquote {
-      margin: 1.2em 0;
-      padding: 0.5em 1em;
-      border-left: 4px solid #94a3b8;
+      margin: 1.5rem 0;
+      padding: 1.2rem 1.5rem;
       background-color: #f8fafc;
-      color: #64748b;
-      border-radius: 0 4px 4px 0;
+      border-left: 5px solid #6366f1;
+      border-radius: 4px 12px 12px 4px;
+      color: #475569;
     }
     .dark .markdown-content blockquote {
-      background-color: #1e293b;
-      border-left-color: #64748b;
+      background-color: rgba(30, 41, 59, 0.5);
       color: #94a3b8;
     }
 
-    /* 行内代码 */
-    .markdown-content code {
-      padding: 0.2em 0.4em;
-      margin: 0;
-      font-size: 85%;
-      background-color: #f1f5f9;
-      color: #ef4444; /* 给行内代码一点高亮色，区分度更好 */
+    /* 列表优化：增加层级呼吸感 */
+    .markdown-content ul, .markdown-content ol {
+      margin: 1.2rem 0;
+      padding-left: 1.8rem;
+    }
+    .markdown-content li {
+      margin-bottom: 0.8rem;
+    }
+    /* 列表内的空格感 */
+    .markdown-content li > p { margin: 0.4rem 0; }
+
+    /* 强重点强调：使用柔和底色而非单纯加粗 */
+    .markdown-content strong {
+      color: #4f46e5;
+      background: rgba(99, 102, 241, 0.08);
+      padding: 0 4px;
+      margin: 0 2px;
       border-radius: 4px;
-      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+      font-weight: 600;
     }
-    .dark .markdown-content code {
-      background-color: #334155;
-      color: #fca5a5;
-    }
-
-    /* 代码块 (优先级高于行内代码) */
-    .markdown-content pre {
-      margin: 1.2em 0;
-      padding: 1em;
-      overflow-x: auto; /* 允许横向滚动 */
-      border-radius: 8px;
-      background-color: #1e293b; /* 建议无论明暗主题，代码块都偏暗色，阅读体验更好 */
-      color: #f8fafc;
-    }
-    .dark .markdown-content pre {
-      background-color: #0f172a;
-    }
-    .markdown-content pre code {
-      padding: 0;
-      margin: 0;
-      font-size: 85%;
-      background: transparent;
-      color: inherit;
-      border-radius: 0;
-      display: block;
-      white-space: pre; /* 保持格式 */
+    .dark .markdown-content strong {
+      color: #a5b4fc;
+      background: rgba(165, 180, 252, 0.15);
     }
 
-    /* 滚动条美化 (针对代码块和表格) */
-    .markdown-content pre::-webkit-scrollbar { height: 8px; }
-    .markdown-content pre::-webkit-scrollbar-track { background: transparent; }
-    .markdown-content pre::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
-    .markdown-content pre::-webkit-scrollbar-thumb:hover { background: #64748b; }
-
-    /* 表格容器级别的滚动 (兼容很宽的对比表) */
+    /* 表格深度美化：适配宽屏滚动 */
     .markdown-content table {
-      display: block; /* 使表格可以独立滚动 */
-      overflow-x: auto;
       width: 100%;
-      border-collapse: collapse;
-      margin: 1.2em 0;
-      font-size: 0.9em;
-    }
-    .markdown-content th,
-    .markdown-content td {
-      padding: 0.75em 1em;
+      border-collapse: separate;
+      border-spacing: 0;
+      margin: 2rem 0;
       border: 1px solid #e2e8f0;
-      min-width: 100px; /* 防止内容过于拥挤 */
+      border-radius: 12px;
+      overflow: hidden;
+      display: block;
+      overflow-x: auto; /* 保证手机端可滑动 */
     }
-    .dark .markdown-content th,
-    .dark .markdown-content td {
-      border-color: #334155;
-    }
+
     .markdown-content th {
       background-color: #f8fafc;
       font-weight: 600;
+      padding: 1rem;
+      border-bottom: 2px solid #e2e8f0;
+      text-align: left;
+      white-space: nowrap;
     }
-    .dark .markdown-content th {
-      background-color: #0f172a;
-    }
-    .markdown-content tr:nth-child(even) { background-color: #fcfcfc; }
-    .dark .markdown-content tr:nth-child(even) { background-color: #162032; }
 
-    /* 图片 */
-    .markdown-content img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin: 1em 0;
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); /* 增加一点微阴影 */
+    .markdown-content td {
+      padding: 1rem;
+      border-bottom: 1px solid #f1f5f9;
+      line-height: 1.6;
     }
+    .dark .markdown-content table { border-color: #334155; }
+    .dark .markdown-content th { background-color: #1e293b; border-bottom-color: #334155; }
+    .dark .markdown-content td { border-bottom-color: #334155; }
+
+    /* 行内代码 */
+    .markdown-content code {
+      padding: 0.2rem 0.5rem;
+      background-color: #f1f5f9;
+      color: #be185d;
+      border-radius: 6px;
+      font-family: 'Consolas', monospace;
+      font-size: 0.9em;
+      margin: 0 2px;
+    }
+    .dark .markdown-content code { background-color: #1e293b; color: #f472b6; }
+
+    /* 代码块 */
+    .markdown-content pre {
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      background-color: #0f172a;
+      border-radius: 12px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+
+    /* 分割线 */
+    .markdown-content hr {
+      margin: 3rem 0;
+      border: 0;
+      border-top: 2px dashed #e2e8f0;
+    }
+    .dark .markdown-content hr { border-top-color: #334155; }
   `
 }
 
-/**
- * 创建并注入Markdown样式到页面
- */
 export const injectMarkdownStyles = (containerId?: string): void => {
   const styleId = containerId ? `markdown-styles-${containerId}` : 'markdown-styles'
-  
-  if (document.getElementById(styleId)) {
-    return
-  }
-  
+  if (document.getElementById(styleId)) return
+
   const styleElement = document.createElement('style')
   styleElement.id = styleId
-  
-  if (containerId) {
-    const scopedStyles = getMarkdownStyles()
-      .replace(/\.markdown-content/g, `#${containerId} .markdown-content`)
-      .replace(/\.dark/g, `#${containerId}.dark`)
-    styleElement.textContent = scopedStyles
-  } else {
-    styleElement.textContent = getMarkdownStyles()
-  }
-  
+  const css = getMarkdownStyles()
+
+  styleElement.textContent = containerId
+    ? css.replace(/\.markdown-content/g, `#${containerId} .markdown-content`)
+    : css
+
   document.head.appendChild(styleElement)
 }
