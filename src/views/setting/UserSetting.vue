@@ -127,7 +127,7 @@
                     <p
                       class="truncate text-sm font-semibold text-slate-600 dark:text-slate-300 mt-0.5"
                     >
-                      {{ form.grade }}级
+                      {{ form.grade }}
                     </p>
                   </div>
                 </div>

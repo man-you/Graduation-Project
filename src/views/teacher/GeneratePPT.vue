@@ -14,7 +14,7 @@
     <header
       class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-200/50 px-8 py-5"
     >
-      <div class="max-w-5xl mx-auto flex items-center justify-between">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
         <div class="flex items-center gap-5">
           <button
             @click="router.back()"
@@ -172,51 +172,96 @@
         </div>
 
         <!-- 状态3：成功页 -->
-        <div v-else-if="pptStore.pptUrl" key="success">
+        <div v-else-if="pptStore.pptUrl" key="success" class="max-w-3xl mx-auto">
           <div
-            class="bg-white rounded-2xl border border-slate-200 p-4 md:p-5 text-center shadow-lg shadow-slate-200/40 max-w-xl mx-auto"
+            class="bg-white rounded-[32px] border border-slate-200 p-6 md:p-10 shadow-xl shadow-slate-200/40 relative overflow-hidden"
           >
-            <!-- 课件预览图 -->
             <div
-              class="w-full aspect-video bg-slate-100 rounded-lg mb-3 overflow-hidden relative border border-slate-200 flex items-center justify-center"
-            >
-              <div class="text-blue-400">
-                <PhPresentationChart :size="32" weight="fill" />
-              </div>
-              <div
-                class="absolute top-1.5 right-1.5 bg-blue-600 text-white px-1.5 py-0.5 rounded text-xs font-bold shadow-sm"
-              >
-                生成完毕
-              </div>
-            </div>
+              class="absolute top-0 right-0 w-32 h-32 bg-blue-50/40 rounded-bl-full -z-0 pointer-events-none"
+            ></div>
 
-            <div class="space-y-1.5 mb-3">
-              <h2 class="text-base font-bold text-slate-900">
-                课件制作 <span class="text-blue-600">完成</span>
-              </h2>
-              <p class="text-slate-400 text-sm font-medium">
-                已根据您的教学主题构建了完整的课程逻辑与视觉排版
-              </p>
-            </div>
+            <div class="flex flex-col md:flex-row gap-8 md:gap-10 items-center relative z-10">
+              <div class="w-full md:w-1/2">
+                <div
+                  class="relative aspect-[16/10] bg-slate-50/50 border border-slate-200 rounded-2xl overflow-hidden flex items-center justify-center p-6"
+                >
+                  <div
+                    class="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:1.5rem_1.5rem] opacity-40"
+                  ></div>
 
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-1.5">
-              <a
-                :href="pptStore.pptUrl ?? undefined"
-                download
-                class="flex items-center justify-center gap-1.5 bg-blue-600 text-white px-4 py-2 rounded-md font-bold text-sm shadow-sm shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95 w-full sm:w-auto"
-              >
-                <PhDownloadSimple :size="14" weight="bold" />
-                下载课件文件 (PPTX)
-              </a>
-              <button
-                @click="handleRegenerate"
-                class="flex items-center justify-center gap-1.5 bg-white text-slate-600 px-3 py-2 rounded-md font-bold text-sm hover:text-blue-600 hover:border-blue-200 transition-all active:scale-95 w-full sm:w-auto border border-slate-200"
-              >
-                <PhArrowClockwise :size="14" weight="bold" />
-                重新制作
-              </button>
+                  <div class="relative w-full max-w-[200px] aspect-[16/11] z-10">
+                    <div
+                      class="absolute inset-0 bg-white border border-slate-200 rounded-xl shadow-sm transform translate-x-3 translate-y-3 opacity-40"
+                    ></div>
+                    <div
+                      class="absolute inset-0 bg-white border border-slate-200 rounded-xl shadow-sm transform translate-x-1.5 translate-y-1.5 opacity-70"
+                    ></div>
+
+                    <div
+                      class="absolute inset-0 bg-white border border-slate-200 rounded-xl shadow-sm flex flex-col p-4 relative overflow-hidden"
+                    >
+                      <div
+                        class="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center text-blue-500 mb-3 border border-blue-100/50"
+                      >
+                        <PhPresentationChart :size="16" weight="fill" />
+                      </div>
+
+                      <div class="space-y-2 flex-1">
+                        <div class="h-2 w-3/4 bg-slate-200 rounded-full"></div>
+                        <div class="h-1.5 w-1/2 bg-slate-100 rounded-full"></div>
+                        <div class="h-1.5 w-full bg-slate-50 rounded-full mt-3"></div>
+                        <div class="h-1.5 w-5/6 bg-slate-50 rounded-full"></div>
+                      </div>
+
+                      <div
+                        class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-80"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="w-full md:w-1/2 text-left space-y-6">
+                <div class="space-y-3">
+                  <div
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-md text-xs font-bold"
+                  >
+                    <PhCheckCircle :size="14" weight="fill" />
+                    生成成功
+                  </div>
+                  <h2 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+                    课件已生成完毕
+                  </h2>
+                  <p class="text-slate-500 text-sm leading-relaxed">
+                    AI 已完成教学逻辑构建与视觉排版。您可以下载文件进行最后的微调。
+                  </p>
+                </div>
+
+                <div class="flex flex-col gap-3">
+                  <a
+                    :href="pptStore.pptUrl ?? undefined"
+                    download
+                    class="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors active:scale-[0.98]"
+                  >
+                    <PhDownloadSimple :size="18" weight="bold" />
+                    下载 PPTX 课件
+                  </a>
+                  <button
+                    @click="handleRegenerate"
+                    class="flex items-center justify-center gap-2 bg-white text-slate-600 px-6 py-3.5 rounded-xl font-bold text-sm hover:bg-slate-50 hover:text-slate-900 border border-slate-200 transition-colors active:scale-[0.98]"
+                  >
+                    <PhArrowClockwise :size="16" weight="bold" />
+                    开启新的创作
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
+
+          <p class="mt-6 text-center text-slate-400 text-sm flex items-center justify-center gap-2">
+            <PhInfo :size="16" />
+            文件将在退出后失效，请及时保存
+          </p>
         </div>
       </transition>
 
@@ -306,17 +351,24 @@ const handleVisibilityChange = () => {
 }
 
 onMounted(() => {
-  // 1. 检查是否有持久化的任务需要恢复
+  // ========== 临时调试：强制显示成功页（仅开发环境） ==========
+  if (!import.meta.env.PROD) {
+    pptStore.pptUrl = '#mock-ppt' // 设置一个非空值即可触发成功页
+    pptStore.generating = false // 确保不在“生成中”状态
+    pptStore.generationError = null // 清除错误状态
+    // ⚠️ 关键：直接返回，避免执行后面的 resetGeneration()
+    return
+  }
+
+  // ========== 以下是正式逻辑（生产环境才执行）==========
   if (pptStore.currentSid && !pptStore.pptUrl) {
     console.debug('检测到未完成的任务 SID，自动恢复轮询...')
-    pptStore.generating = true // 确保 UI 切换到生成中状态
+    pptStore.generating = true
     pptStore.pollPPTProgress()
   } else if (!pptStore.currentSid) {
-    // 只有在确定没有未完成任务时，才清理状态
     pptStore.resetGeneration()
   }
 
-  // 2. 注册防休眠唤醒事件
   document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 

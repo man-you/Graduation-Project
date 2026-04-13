@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-slate-50 p-4 md:p-8 font-sans antialiased text-slate-800">
-    <div class="max-w-5xl mx-auto">
+    <div class="max-w-7xl mx-auto">
       <header class="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4 px-1">
         <div class="flex items-center gap-4">
           <button

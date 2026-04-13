@@ -2,7 +2,7 @@
   <div
     class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-700 font-sans antialiased"
   >
-    <div class="max-w-6xl mx-auto px-3 lg:px-4 py-8">
+    <div class="max-w-7xl mx-auto px-3 lg:px-4 py-8">
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-10 mb-20">
         <div class="max-w-2xl">
           <div class="flex items-center gap-5 mb-6">
