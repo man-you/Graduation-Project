@@ -402,7 +402,7 @@ const navToQuiz = () => {
 }
 
 const navToChat = () => {
-  router.push({ name: 'StudentChat', params: { nodeId: currentNode.value?.id } })
+  router.push({ name: 'StudentChat', query: { nodeId: currentNode.value?.id } })
 }
 
 const goBack = () => routerBack()

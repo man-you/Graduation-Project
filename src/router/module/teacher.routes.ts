@@ -44,7 +44,6 @@ export const teacherChildrenRoutes: RouteRecordRaw[] = [
     path: 'assistant',
     name: 'TeacherChat',
     component: () => import('@/views/public/ChatAgent.vue'),
-    props: true,
     meta: { roles: ['teacher'], title: 'AI 助手' }
   },
     {

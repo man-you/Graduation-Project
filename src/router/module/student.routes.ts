@@ -47,7 +47,6 @@ export const studentChildrenRoutes: RouteRecordRaw[] = [
     path: 'assistant',
     name: 'StudentChat',
     component: () => import('@/views/public/ChatAgent.vue'),
-    props: true,
     meta: { roles: ['student'] }
 
   },
