@@ -8,24 +8,47 @@ import type {
 
 /**
  * 获取COS资源的预签名URL，用于前端临时访问
- * @param nodeId 数据库中资源节点的ID
+ * @param nodeId 数据库中资源节点的ID（用于个人资源）
+ * @param fileId 文件ID（用于课程资源）
  * @param method HTTP请求方法，默认get
  * @param expireTime 签名过期时间（秒），默认3600秒
  */
 export const getSignedUrlApi = (
-  nodeId: number,
+  nodeId?: number,
+  fileId?: number,
   method?: 'get' | 'post' | 'put' | 'delete',
   expireTime?: number
-): Promise<{ signedUrl: string }> => {
+): Promise<string> => {
+  // 构建参数对象，只包含有值的参数
+  const params: {
+    nodeId?: number;
+    fileId?: number;
+    method?: string;
+    expireTime?: number
+  } = {};
+
+  // 只有当参数有实际值时才添加到params中
+  if (nodeId !== undefined && nodeId !== null) {
+    params.nodeId = nodeId;
+  }
+
+  if (fileId !== undefined && fileId !== null) {
+    params.fileId = fileId;
+  }
+
+  if (method !== undefined) {
+    params.method = method;
+  }
+
+  if (expireTime !== undefined) {
+    params.expireTime = expireTime;
+  }
+
   return request({
-    url: '/api/v1/tencent-cos/user/signed-url',
+    url: '/api/v1/tencent-cos/signed-url',
     method: 'get',
-    params: {
-      nodeId,
-      method,
-      expireTime
-    }
-  })
+    params
+  });
 }
 
 /**
@@ -123,9 +146,18 @@ export const renameResourceApi = (updateDto: UpdateFileDto): Promise<any> => {
  * @param resourcePath 资源路径
  */
 export const deleteResourceApi = (resourcePath: string, courseId?: number): Promise<any> => {
+  // 构建参数对象
+  const params: { path: string; courseId?: number } = { path: resourcePath };
+
+  if (courseId !== undefined && courseId !== null) {
+    params.courseId = courseId;
+  }
+
   return request({
     url: '/api/v1/tencent-cos/user/delete',
     method: 'delete',
-    params: { path: resourcePath, courseId }
-  })
+    params
+  });
 }
+
+

@@ -166,6 +166,7 @@
                       handleDownload(
                         selectedNode.resource?.signedUrl,
                         selectedNode.resource?.resourceName,
+                        selectedNode,
                       )
                     "
                     class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition shadow hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 text-sm flex items-center justify-center gap-2"
@@ -262,7 +263,8 @@ let svg = null
 let zoomBehavior = null
 let currentLinks = []
 
-const handleDownload = (url, name) => {
+const handleDownload = (url, name, node) => {
+  console.log('handleDownload', url, name, node)
   if (!url) {
     alert('下载链接无效，请检查网络或刷新重试')
     return
