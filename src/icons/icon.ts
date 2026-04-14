@@ -71,10 +71,12 @@ import {
   PhSlideshow,
   PhSelectionAll,
   PhPresentationChart,
+  PhLock,
 } from '@phosphor-icons/vue'
 
 // 全局导入，全局导出
 export const icons = {
+  PhLock,
   PhSelectionAll,
   PhPresentationChart,
   PhSlideshow,

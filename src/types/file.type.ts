@@ -4,17 +4,17 @@ export type FileType = 'VIDEO' | 'PDF'
  * 文件或文件夹资源项（API返回的实际格式）
  */
 export interface FileResourceItem {
+  id: string
   resourceName: string
   resourcePath: string
   resourceType: 'FILE' | 'FOLDER'
   fileSize: string | null
   fileFormat: string | null
-  id?: string
   isPublic?: boolean
 }
 
 /**
- * 文件或文件夹项的基本信息（前端展示格式）
+ * 文件或文件夹项的基本信息
  */
 export interface FileItem {
   id: string

@@ -102,6 +102,8 @@ export const useCourseStore = defineStore('course', {
       this.nodesLoading = true
       try {
         const res = await getCourseKnowledgeGraphApi(id)
+
+
         const rootNode = res[0]
 
         if (rootNode) {
